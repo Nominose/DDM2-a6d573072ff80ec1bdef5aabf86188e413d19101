@@ -55,9 +55,17 @@ logger = logging.getLogger('base')
 logger.info('[Stage 2] Markov chain state matching (using teacher N2N)!')
 
 # dataset
+train_set = None
+train_loader = None
+val_set = None
+val_loader = None
+
 for phase, dataset_opt in opt['datasets'].items():
     dataset_opt['initial_stage_file'] = None
-    if phase == 'train' and args.phase != 'val':
+    if phase == 'train':
+        # 强制加载所有 train samples
+        dataset_opt['val_volume_idx'] = 'all'
+        dataset_opt['val_slice_idx'] = 'all'
         train_set = Data.create_dataset(dataset_opt, phase)
         train_loader = Data.create_dataloader(
             train_set, dataset_opt, phase)
@@ -85,29 +93,19 @@ sqrt_alphas_cumprod_prev_np = np.sqrt(
 sqrt_alphas_cumprod_prev = to_torch(np.sqrt(
             np.append(1., alphas_cumprod)))
 
-idx = 0
-stage_file = open(opt['stage2_file'],'w+')
-for _,  data in tqdm(enumerate(val_loader)):
-    idx += 1
-    
-    # ====== 修复：从 val_set.samples 获取正确的 volume_idx 和 slice_idx ======
-    volume_idx, slice_idx = val_set.samples[idx - 1]
-    
-    # ====== 修复：直接使用 ct_dataset 加载的 denoised（已处理 slice 偏移）======
+
+def compute_matched_state(data, sqrt_alphas_cumprod_prev):
+    """Compute matched state for a single sample"""
     if 'denoised' not in data:
-        stage_file.write('%d_%d_%d\n' % (volume_idx, slice_idx, 500))
-        continue
+        return 500  # default value when no teacher result
     
     denoised = data['denoised'].cuda()
-    # ========================================================================
-
-    max_lh = -1
-    max_t = -1
+    
     min_lh = 999
     min_t = -1
     prev_diff = 999.
     
-    for t in range(sqrt_alphas_cumprod_prev.shape[0]): # linear search with early stopping
+    for t in range(sqrt_alphas_cumprod_prev.shape[0]):
         noise = data['X'].cuda() - sqrt_alphas_cumprod_prev[t] * denoised
         noise_mean = torch.mean(noise)
         noise = noise - noise_mean
@@ -121,26 +119,63 @@ for _,  data in tqdm(enumerate(val_loader)):
             min_t = t
 
         if diff > prev_diff:
-            break # find a match!
+            break
         else:
             prev_diff = diff
-
-    if idx == 30 and args.debug:
-        noise = torch.randn_like(denoised)
-        result = sqrt_alphas_cumprod_prev[min_t] * denoised.detach() + (1. - sqrt_alphas_cumprod_prev[min_t]**2).sqrt() * noise
-        denoised_np = denoised.detach().cpu().numpy()[0,0]
-        input_np = data['X'].detach().cpu().numpy()[0,0]
-        result_np = result.detach().cpu().numpy()[0,0]
-
-        result_np = (result_np + 1.) / 2.
-        input_np = (input_np + 1.) / 2.
-        plt.imshow(np.hstack((input_np, result_np, denoised_np)), cmap='gray')
-        plt.show()
-        
-        print(min_t, np.max(result_np), np.min(result_np))
-        break
     
-    stage_file.write('%d_%d_%d\n' % (volume_idx, slice_idx, min_t))
+    return min_t
+
+
+# 打开文件写入
+stage_file = open(opt['stage2_file'], 'w+')
+
+# ========== 处理 train set ==========
+if train_loader is not None:
+    logger.info(f'Processing train set: {len(train_set.samples)} samples')
+    idx = 0
+    for _, data in tqdm(enumerate(train_loader), total=len(train_loader), desc='train'):
+        volume_idx, slice_idx = train_set.samples[idx]
+        idx += 1
+        
+        if 'denoised' not in data:
+            stage_file.write('train_%d_%d_%d\n' % (volume_idx, slice_idx, 500))
+            continue
+        
+        min_t = compute_matched_state(data, sqrt_alphas_cumprod_prev)
+        
+        if args.debug and idx == 30:
+            denoised = data['denoised'].cuda()
+            noise = torch.randn_like(denoised)
+            result = sqrt_alphas_cumprod_prev[min_t] * denoised.detach() + (1. - sqrt_alphas_cumprod_prev[min_t]**2).sqrt() * noise
+            denoised_np = denoised.detach().cpu().numpy()[0,0]
+            input_np = data['X'].detach().cpu().numpy()[0,0]
+            result_np = result.detach().cpu().numpy()[0,0]
+
+            result_np = (result_np + 1.) / 2.
+            input_np = (input_np + 1.) / 2.
+            plt.imshow(np.hstack((input_np, result_np, denoised_np)), cmap='gray')
+            plt.show()
+            
+            print(min_t, np.max(result_np), np.min(result_np))
+            break
+        
+        stage_file.write('train_%d_%d_%d\n' % (volume_idx, slice_idx, min_t))
+
+# ========== 处理 val set ==========
+if val_loader is not None:
+    logger.info(f'Processing val set: {len(val_set.samples)} samples')
+    idx = 0
+    for _, data in tqdm(enumerate(val_loader), total=len(val_loader), desc='val'):
+        volume_idx, slice_idx = val_set.samples[idx]
+        idx += 1
+        
+        if 'denoised' not in data:
+            stage_file.write('val_%d_%d_%d\n' % (volume_idx, slice_idx, 500))
+            continue
+        
+        min_t = compute_matched_state(data, sqrt_alphas_cumprod_prev)
+        
+        stage_file.write('val_%d_%d_%d\n' % (volume_idx, slice_idx, min_t))
 
 stage_file.close()
 print('done!')
