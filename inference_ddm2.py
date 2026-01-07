@@ -22,6 +22,39 @@ import model as Model
 import core.logger as Logger
 
 
+def apply_histogram_equalization(img, bins, bins_mapped):
+    """正向 HE：原始 HU → HE 空间"""
+    if bins is None or bins_mapped is None:
+        return img
+    flat_img = img.flatten()
+    bin_indices = np.digitize(flat_img, bins) - 1
+    bin_indices = np.clip(bin_indices, 0, len(bins_mapped) - 1)
+    equalized = bins_mapped[bin_indices]
+    return equalized.reshape(img.shape).astype(np.float32)
+
+
+def inverse_histogram_equalization(img, bins, bins_mapped):
+    """
+    逆向 HE：HE 空间 → 原始 HU
+    
+    原理：
+    - 正向：原始值 → 查 bins 位置 → 用 bins_mapped 取值
+    - 逆向：HE 值 → 查 bins_mapped 位置 → 用 bins 取值
+    """
+    if bins is None or bins_mapped is None:
+        return img
+    
+    flat_img = img.flatten()
+    
+    # 在 bins_mapped 中找位置（逆向查找）
+    bin_indices = np.digitize(flat_img, bins_mapped) - 1
+    bin_indices = np.clip(bin_indices, 0, len(bins) - 1)
+    
+    # 用 bins 取回原始值
+    original = bins[bin_indices]
+    
+    return original.reshape(img.shape).astype(np.float32)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='DDM2 Inference')
@@ -32,6 +65,7 @@ def parse_args():
     parser.add_argument('--save_first', action='store_true', default=True, help='Save first-step')
     parser.add_argument('--save_final', action='store_true', default=True, help='Save final')
     parser.add_argument('--gpu', type=int, default=0, help='GPU id')
+    parser.add_argument('--no_inverse_he', action='store_true', help='Skip inverse HE')
     return parser.parse_args()
 
 
@@ -65,13 +99,28 @@ def main():
     HU_MIN = opt['datasets']['val'].get('HU_MIN', -1000.0)
     HU_MAX = opt['datasets']['val'].get('HU_MAX', 2000.0)
     
+    # 加载 HE bins
+    bins_file = opt['datasets']['val'].get('bins_file')
+    bins_mapped_file = opt['datasets']['val'].get('bins_mapped_file')
+    bins = None
+    bins_mapped = None
+    use_inverse_he = False
     
+    if bins_file and bins_mapped_file:
+        if os.path.exists(bins_file) and os.path.exists(bins_mapped_file):
+            bins = np.load(bins_file).astype(np.float32)
+            bins_mapped = np.load(bins_mapped_file).astype(np.float32)
+            use_inverse_he = not args.no_inverse_he
+            print(f"Histogram Equalization bins loaded")
+            print(f"  bins range: [{bins.min():.1f}, {bins.max():.1f}]")
+            print(f"  bins_mapped range: [{bins_mapped.min():.1f}, {bins_mapped.max():.1f}]")
     
     print("=" * 60)
     print("DDM2 Inference")
     print("=" * 60)
     print(f"Config: {args.config}")
     print(f"HU range: [{HU_MIN}, {HU_MAX}]")
+    print(f"Inverse HE: {use_inverse_he}")
     print(f"Patient index: {args.patient_idx}")
     
     # 查找 checkpoint
@@ -150,6 +199,11 @@ def main():
         first_hu = first * (HU_MAX - HU_MIN) + HU_MIN
         final_hu = final * (HU_MAX - HU_MIN) + HU_MIN
         
+        # 逆向 HE：转换回原始 HU 空间
+        if use_inverse_he:
+            noisy_hu = inverse_histogram_equalization(noisy_hu, bins, bins_mapped)
+            first_hu = inverse_histogram_equalization(first_hu, bins, bins_mapped)
+            final_hu = inverse_histogram_equalization(final_hu, bins, bins_mapped)
         
         noisy_inputs.append(noisy_hu)
         first_results.append(first_hu)
@@ -205,6 +259,7 @@ def main():
     
     # 统计信息
     print("\n" + "=" * 60)
+    print("Statistics (HU values, after inverse HE)" if use_inverse_he else "Statistics (HU values, HE space)")
     print("-" * 60)
     print(f"{'Image':<20} {'Min':>10} {'Max':>10} {'Mean':>10} {'Std':>10}")
     print("-" * 60)
