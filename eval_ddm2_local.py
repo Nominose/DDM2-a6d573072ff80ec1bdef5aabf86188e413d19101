@@ -1,6 +1,7 @@
 """
 DDM2 Evaluation Script - Local Version
-严格按照原始 eval_ddm2.py 逻辑，只计算 MAE, SSIM, LPIPS
+本脚本用于在本地环境下评估 DDM2 模型的去噪效果。
+它会计算 MAE、SSIM 和 LPIPS 三个指标，评估 DDM2 的去噪结果与 Noisy 图像和 N2N 结果的差异。
 """
 
 import nibabel as nb
@@ -10,18 +11,20 @@ import torch
 import numpy as np
 import pandas as pd
 from skimage.metrics import structural_similarity
+import argparse
 
 # ============================================================================
 # 路径配置 - 修改为你的本地路径
 # ============================================================================
 EXCEL_PATH = '/host/d/file/xingyi_datasets.xlsx'
-BATCH_LIST = [0]
+BATCH_LIST = [5]
 
 # 数据路径
-GT_FILE = '/host/d/file/gt/gt_img.nii.gz'
+GT_ROOT = '/host/d/file/gt/diffusion denoising/unsupervised_gaussian_2D_current_beta0/pred_images'
+GT_EPOCH = 61
 NOISY_ROOT = '/host/d/file/pre/noise2noise/pred_images'  # condition_img 所在目录
 N2N_ROOT = '/host/d/file/pre/noise2noise/pred_images'
-DDM2_ROOT = '/host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260107_005619/inference'
+DDM2_ROOT = '/host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260112_121844/inference'
 
 N2N_EPOCH = 78
 
@@ -30,7 +33,7 @@ vmin = 0
 vmax = 100
 
 # ============================================================================
-# 指标计算函数 - 与原始脚本完全一致
+# 指标计算函数 
 # ============================================================================
 def calc_mae_with_ref_window(img, ref, vmin, vmax):
     maes = []
@@ -38,6 +41,8 @@ def calc_mae_with_ref_window(img, ref, vmin, vmax):
         slice_img = img[:,:,slice_num]
         slice_ref = ref[:,:,slice_num]
         mask = np.where((slice_ref >= vmin) & (slice_ref <= vmax), 1, 0)
+        if np.sum(mask) == 0:
+            continue
         mae = np.sum(np.abs(slice_img - slice_ref) * mask) / np.sum(mask)
         maes.append(mae)
 
@@ -50,6 +55,8 @@ def calc_ssim_with_ref_window(img, ref, vmin, vmax):
         slice_img = img[:,:,slice_num]
         slice_ref = ref[:,:,slice_num]
         mask = np.where((slice_ref >= vmin) & (slice_ref <= vmax), 1, 0)
+        if np.sum(mask) == 0:
+            continue
         _, ssim_map = structural_similarity(slice_img, slice_ref, data_range=vmax - vmin, full=True)
         ssim = np.sum(ssim_map * mask) / np.sum(mask)
         ssims.append(ssim)
@@ -87,10 +94,35 @@ def calc_lpips(imgs1, imgs2, vmin, vmax, loss_fn):
     return np.mean(lpipss), np.std(lpipss)
 
 
+def get_gt_path(gt_root, pid_str, psid_str, random_n, gt_epoch):
+    """根据患者 ID 构建 GT 路径"""
+    # 格式: GT_ROOT/pid_str/psid_str/random_0/epoch61_1/gt_img.nii.gz
+    return os.path.join(
+        gt_root, 
+        pid_str, 
+        psid_str, 
+        f'random_{random_n}', 
+        f'epoch{gt_epoch}_1', 
+        'gt_img.nii.gz'
+    )
+
+
 # ============================================================================
 # 主程序
 # ============================================================================
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--excel', type=str, default=EXCEL_PATH, help='Excel file path')
+    parser.add_argument('--batch', type=int, nargs='+', default=BATCH_LIST, help='Batch list')
+    parser.add_argument('--patient_id', type=int, default=None, help='Specific patient ID')
+    parser.add_argument('--gt_root', type=str, default=GT_ROOT, help='GT root directory')
+    parser.add_argument('--gt_epoch', type=int, default=GT_EPOCH, help='GT epoch number')
+    parser.add_argument('--noisy_root', type=str, default=NOISY_ROOT, help='Noisy root directory')
+    parser.add_argument('--n2n_root', type=str, default=N2N_ROOT, help='N2N root directory')
+    parser.add_argument('--ddm2_root', type=str, default=DDM2_ROOT, help='DDM2 root directory')
+    parser.add_argument('--output', type=str, default='/host/d/file/ddm2_results.xlsx', help='Output Excel file')
+    args = parser.parse_args()
+    
     # 加载 LPIPS 模型（只加载一次）
     print("Loading LPIPS model...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -98,11 +130,15 @@ if __name__ == '__main__':
     print("LPIPS model loaded.")
     
     # 读取患者列表
-    df = pd.read_excel(EXCEL_PATH)
-    df = df[df['batch'].isin(BATCH_LIST)]
+    df = pd.read_excel(args.excel)
+    df = df[df['batch'].isin(args.batch)]
     df = df[df['random_num'] == 0]  # 只用 random_0
     
-    print(f"Batch {BATCH_LIST}: {len(df)} patients")
+    # 如果指定了 patient_id，过滤
+    if args.patient_id is not None:
+        df = df[df['Patient_ID'] == args.patient_id]
+    
+    print(f"Batch {args.batch}: {len(df)} patients")
     
     results = []
     
@@ -112,7 +148,7 @@ if __name__ == '__main__':
         patient_subid = row['Patient_subID']
         random_n = row['random_num']
         
-        # 格式化路径 (8位/10位补零，用于N2N等)
+        # 格式化路径 (8位/10位补零，用于N2N/GT等)
         pid_str = f"{int(patient_id):08d}"
         psid_str = f"{int(patient_subid):010d}"
         # DDM2 路径不补零
@@ -122,29 +158,29 @@ if __name__ == '__main__':
         print(f"\n[{i+1}/{len(df)}] {pid_str} / {psid_str} / random_{random_n}")
         
         # ========== 加载数据 ==========
-        # GT (ground truth) - 单个文件
-        gt_file = GT_FILE
+        # GT (ground truth) - 根据患者 ID 查找
+        gt_file = get_gt_path(args.gt_root, pid_str, psid_str, random_n, args.gt_epoch)
         if not os.path.exists(gt_file):
             print(f"  [SKIP] GT not found: {gt_file}")
             continue
         gt_img = nb.load(gt_file).get_fdata()
         
         # Noisy (condition) image
-        noisy_file = os.path.join(NOISY_ROOT, pid_str, psid_str, f'random_{random_n}', f'epoch{N2N_EPOCH}', 'condition_img.nii.gz')
+        noisy_file = os.path.join(args.noisy_root, pid_str, psid_str, f'random_{random_n}', f'epoch{N2N_EPOCH}', 'condition_img.nii.gz')
         if not os.path.exists(noisy_file):
             print(f"  [SKIP] Noisy not found: {noisy_file}")
             continue
         noisy_img = nb.load(noisy_file).get_fdata()
         
         # N2N result
-        n2n_file = os.path.join(N2N_ROOT, pid_str, psid_str, f'random_{random_n}', f'epoch{N2N_EPOCH}', 'pred_img.nii.gz')
+        n2n_file = os.path.join(args.n2n_root, pid_str, psid_str, f'random_{random_n}', f'epoch{N2N_EPOCH}', 'pred_img.nii.gz')
         if not os.path.exists(n2n_file):
             print(f"  [SKIP] N2N not found: {n2n_file}")
             continue
         n2n_img = nb.load(n2n_file).get_fdata()
         
         # DDM2 First Step (不补零)
-        ddm2_first_file = os.path.join(DDM2_ROOT, pid_raw, psid_raw, 'ddm2_first_step.nii.gz')
+        ddm2_first_file = os.path.join(args.ddm2_root, pid_raw, psid_raw, 'ddm2_first_step.nii.gz')
         ddm2_first_img = None
         if os.path.exists(ddm2_first_file):
             ddm2_first_img = nb.load(ddm2_first_file).get_fdata()
@@ -152,7 +188,7 @@ if __name__ == '__main__':
             print(f"  [WARNING] DDM2 First not found: {ddm2_first_file}")
         
         # DDM2 Final (不补零)
-        ddm2_final_file = os.path.join(DDM2_ROOT, pid_raw, psid_raw, 'ddm2_final.nii.gz')
+        ddm2_final_file = os.path.join(args.ddm2_root, pid_raw, psid_raw, 'ddm2_final.nii.gz')
         ddm2_final_img = None
         if os.path.exists(ddm2_final_file):
             ddm2_final_img = nb.load(ddm2_final_file).get_fdata()
@@ -229,8 +265,7 @@ if __name__ == '__main__':
         print("=" * 60)
         
         # 保存 Excel
-        output_file = '/host/d/file/ddm2_results.xlsx'
-        result_df.to_excel(output_file, index=False)
-        print(f"\nResults saved to: {output_file}")
+        result_df.to_excel(args.output, index=False)
+        print(f"\nResults saved to: {args.output}")
     
     print("\nDone!")

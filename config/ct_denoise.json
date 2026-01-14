@@ -9,7 +9,7 @@
     "tb_logger": "tb_logger",
     "results": "results",
     "checkpoint": "checkpoint",
-    "resume_state": "host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260107_150627/checkpoint/latest"
+    "resume_state": "/host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260112_113638/checkpoint/latest"
   },
   "datasets": {
     "train": {
@@ -22,8 +22,8 @@
       "slice_range": [30, 80],
       "phase": "train",
       "padding": 3,
-      "val_volume_idx": 13,
-      "val_slice_idx": 25,
+      "val_volume_idx": "all",
+      "val_slice_idx": "all",
       "batch_size": 1,
       "in_channel": 1,
       "num_workers": 4,
@@ -48,8 +48,8 @@
       "slice_range": [30, 80],
       "phase": "val",
       "padding": 3,
-      "val_volume_idx": 13,
-      "val_slice_idx": 25,
+      "val_volume_idx": "all",
+      "val_slice_idx": "all",
       "batch_size": 1,
       "in_channel": 1,
       "num_workers": 0,
@@ -101,7 +101,7 @@
     }
   },
   "train": {
-    "n_iter": 100000,
+    "n_iter": 400000,
     "val_freq": 1000,
     "save_checkpoint_freq": 10000,
     "print_freq": 100,

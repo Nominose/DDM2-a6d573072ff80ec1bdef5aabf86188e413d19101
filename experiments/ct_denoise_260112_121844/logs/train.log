@@ -1,0 +1,1175 @@
+26-01-12 12:18:44.978 - INFO:   name: ct_denoise
+  phase: train
+  gpu_ids: [0]
+  path:[
+    log: experiments/ct_denoise_260112_121844/logs
+    tb_logger: experiments/ct_denoise_260112_121844/tb_logger
+    results: experiments/ct_denoise_260112_121844/results
+    checkpoint: experiments/ct_denoise_260112_121844/checkpoint
+    resume_state: /host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260112_113638/checkpoint/latest
+    experiments_root: experiments/ct_denoise_260112_121844
+  ]
+  datasets:[
+    train:[
+      name: ct
+      dataroot: /host/d/file/fixedCT_static_simulation_train_test_gaussian_local.xlsx
+      data_root: /host/d/file/simulation/
+      train_batches: [0, 1, 2, 3, 4]
+      val_batches: [5]
+      valid_mask: [0, 1000]
+      slice_range: [30, 80]
+      phase: train
+      padding: 3
+      val_volume_idx: 13
+      val_slice_idx: 25
+      batch_size: 1
+      in_channel: 1
+      num_workers: 4
+      use_shuffle: True
+      image_size: 512
+      lr_flip: 0.5
+      HU_MIN: -1000.0
+      HU_MAX: 2000.0
+      histogram_equalization: True
+      bins_file: /host/d/file/histogram_equalization/bins.npy
+      bins_mapped_file: /host/d/file/histogram_equalization/bins_mapped.npy
+      teacher_n2n_root: /host/d/file/pre/noise2noise/pred_images/
+      teacher_n2n_epoch: 78
+    ]
+    val:[
+      name: ct
+      dataroot: /host/d/file/fixedCT_static_simulation_train_test_gaussian_local.xlsx
+      data_root: /host/d/file/simulation/
+      train_batches: [0, 1, 2, 3, 4]
+      val_batches: [5]
+      valid_mask: [0, 1000]
+      slice_range: [30, 80]
+      phase: val
+      padding: 3
+      val_volume_idx: 13
+      val_slice_idx: 25
+      batch_size: 1
+      in_channel: 1
+      num_workers: 0
+      image_size: 512
+      lr_flip: 0.0
+      HU_MIN: -1000.0
+      HU_MAX: 2000.0
+      histogram_equalization: True
+      bins_file: /host/d/file/histogram_equalization/bins.npy
+      bins_mapped_file: /host/d/file/histogram_equalization/bins_mapped.npy
+      teacher_n2n_root: /host/d/file/pre/noise2noise/pred_images/
+      teacher_n2n_epoch: 78
+      data_len: 3
+    ]
+  ]
+  model:[
+    which_model_G: mri
+    finetune_norm: False
+    drop_rate: 0.0
+    unet:[
+      in_channel: 1
+      out_channel: 1
+      inner_channel: 32
+      norm_groups: 32
+      channel_multiplier: [1, 2, 4, 8, 8]
+      attn_res: [16]
+      res_blocks: 2
+      dropout: 0.0
+      version: v1
+    ]
+    beta_schedule:[
+      train:[
+        schedule: rev_warmup70
+        n_timestep: 1000
+        linear_start: 5e-05
+        linear_end: 0.01
+      ]
+      val:[
+        schedule: rev_warmup70
+        n_timestep: 1000
+        linear_start: 5e-05
+        linear_end: 0.01
+      ]
+    ]
+    diffusion:[
+      image_size: 512
+      channels: 1
+      conditional: True
+    ]
+  ]
+  train:[
+    n_iter: 400000
+    val_freq: 1000
+    save_checkpoint_freq: 10000
+    print_freq: 100
+    optimizer:[
+      type: adam
+      lr: 0.0001
+    ]
+    ema_scheduler:[
+      step_start_ema: 5000
+      update_ema_every: 1
+      ema_decay: 0.9999
+    ]
+  ]
+  noise_model:[
+    resume_state: None
+    initial_stage_file: None
+    drop_rate: 0.0
+    unet:[
+      in_channel: 2
+      out_channel: 1
+      inner_channel: 32
+      norm_groups: 32
+      channel_multiplier: [1, 2, 4, 8, 8]
+      attn_res: [16]
+      res_blocks: 2
+      dropout: 0.0
+      version: v1
+    ]
+    beta_schedule:[
+      linear_start: 5e-05
+      linear_end: 0.01
+    ]
+    n_iter: 50000
+    val_freq: 2000
+    save_checkpoint_freq: 10000
+    print_freq: 100
+    optimizer:[
+      type: adam
+      lr: 0.0001
+    ]
+  ]
+  stage2_file: experiments/ct_denoise_teacher/stage2_matched.txt
+  distributed: False
+
+26-01-12 12:18:50.467 - INFO: CT dataset [ct] is created. Size: 3450
+26-01-12 12:18:52.539 - INFO: CT dataset [ct] is created. Size: 1
+26-01-12 12:18:52.539 - INFO: Initial Dataset Finished
+26-01-12 12:18:54.592 - INFO: Initialization method [orthogonal]
+26-01-12 12:18:55.395 - INFO: Loading stage2 pretrained model for G [/host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260112_113638/checkpoint/latest] ...
+26-01-12 12:18:58.669 - INFO: [DDM2] is created.
+26-01-12 12:18:58.670 - INFO: Initial Model Finished
+26-01-12 12:18:58.670 - INFO: Resuming training from epoch: 88, iter: 300000.
+26-01-12 12:19:33.443 - INFO: <epoch: 89, iter: 300,100> l_pix: 1.7289e-03 
+26-01-12 12:19:53.874 - INFO: <epoch: 89, iter: 300,200> l_pix: 1.5334e-03 
+26-01-12 12:20:16.105 - INFO: <epoch: 89, iter: 300,300> l_pix: 1.7818e-03 
+26-01-12 12:20:36.673 - INFO: <epoch: 89, iter: 300,400> l_pix: 2.2684e-03 
+26-01-12 12:20:58.844 - INFO: <epoch: 89, iter: 300,500> l_pix: 1.0262e-03 
+26-01-12 12:21:18.600 - INFO: <epoch: 89, iter: 300,600> l_pix: 1.3339e-03 
+26-01-12 12:21:41.447 - INFO: <epoch: 89, iter: 300,700> l_pix: 1.4855e-03 
+26-01-12 12:22:02.641 - INFO: <epoch: 89, iter: 300,800> l_pix: 1.4924e-03 
+26-01-12 12:22:23.538 - INFO: <epoch: 89, iter: 300,900> l_pix: 1.7617e-03 
+26-01-12 12:22:44.994 - INFO: <epoch: 89, iter: 301,000> l_pix: 1.4270e-03 
+26-01-12 12:23:25.577 - INFO: <epoch: 89, iter: 301,100> l_pix: 9.8832e-04 
+26-01-12 12:23:46.419 - INFO: <epoch: 89, iter: 301,200> l_pix: 1.7069e-03 
+26-01-12 12:24:07.172 - INFO: <epoch: 89, iter: 301,300> l_pix: 1.5688e-03 
+26-01-12 12:24:30.101 - INFO: <epoch: 89, iter: 301,400> l_pix: 1.6432e-03 
+26-01-12 12:24:51.824 - INFO: <epoch: 89, iter: 301,500> l_pix: 1.1643e-03 
+26-01-12 12:25:13.877 - INFO: <epoch: 89, iter: 301,600> l_pix: 1.6313e-03 
+26-01-12 12:25:35.589 - INFO: <epoch: 89, iter: 301,700> l_pix: 1.4478e-03 
+26-01-12 12:25:57.342 - INFO: <epoch: 89, iter: 301,800> l_pix: 1.4903e-03 
+26-01-12 12:26:20.969 - INFO: <epoch: 89, iter: 301,900> l_pix: 1.7696e-03 
+26-01-12 12:26:43.227 - INFO: <epoch: 89, iter: 302,000> l_pix: 1.5469e-03 
+26-01-12 12:27:18.210 - INFO: <epoch: 89, iter: 302,100> l_pix: 1.6531e-03 
+26-01-12 12:27:40.060 - INFO: <epoch: 89, iter: 302,200> l_pix: 1.7384e-03 
+26-01-12 12:28:01.924 - INFO: <epoch: 89, iter: 302,300> l_pix: 1.4288e-03 
+26-01-12 12:28:23.561 - INFO: <epoch: 89, iter: 302,400> l_pix: 1.6856e-03 
+26-01-12 12:28:46.458 - INFO: <epoch: 89, iter: 302,500> l_pix: 1.7173e-03 
+26-01-12 12:29:08.034 - INFO: <epoch: 89, iter: 302,600> l_pix: 1.2834e-03 
+26-01-12 12:29:29.464 - INFO: <epoch: 89, iter: 302,700> l_pix: 1.2256e-03 
+26-01-12 12:29:50.463 - INFO: <epoch: 89, iter: 302,800> l_pix: 1.0401e-03 
+26-01-12 12:30:11.353 - INFO: <epoch: 89, iter: 302,900> l_pix: 1.4870e-03 
+26-01-12 12:30:35.506 - INFO: <epoch: 89, iter: 303,000> l_pix: 1.1357e-03 
+26-01-12 12:31:08.889 - INFO: <epoch: 89, iter: 303,100> l_pix: 1.6201e-03 
+26-01-12 12:31:33.271 - INFO: <epoch: 89, iter: 303,200> l_pix: 1.3361e-03 
+26-01-12 12:31:54.679 - INFO: <epoch: 89, iter: 303,300> l_pix: 1.0956e-03 
+26-01-12 12:32:17.051 - INFO: <epoch: 89, iter: 303,400> l_pix: 1.1575e-03 
+26-01-12 12:32:36.934 - INFO: <epoch: 90, iter: 303,500> l_pix: 1.7269e-03 
+26-01-12 12:32:59.826 - INFO: <epoch: 90, iter: 303,600> l_pix: 2.2068e-03 
+26-01-12 12:33:21.318 - INFO: <epoch: 90, iter: 303,700> l_pix: 1.2627e-03 
+26-01-12 12:33:42.285 - INFO: <epoch: 90, iter: 303,800> l_pix: 1.9718e-03 
+26-01-12 12:34:03.178 - INFO: <epoch: 90, iter: 303,900> l_pix: 1.4512e-03 
+26-01-12 12:34:26.060 - INFO: <epoch: 90, iter: 304,000> l_pix: 1.3133e-03 
+26-01-12 12:34:58.441 - INFO: <epoch: 90, iter: 304,100> l_pix: 1.8184e-03 
+26-01-12 12:35:20.625 - INFO: <epoch: 90, iter: 304,200> l_pix: 2.0111e-03 
+26-01-12 12:35:41.637 - INFO: <epoch: 90, iter: 304,300> l_pix: 1.3528e-03 
+26-01-12 12:36:02.315 - INFO: <epoch: 90, iter: 304,400> l_pix: 1.5093e-03 
+26-01-12 12:36:23.303 - INFO: <epoch: 90, iter: 304,500> l_pix: 8.2157e-04 
+26-01-12 12:36:46.748 - INFO: <epoch: 90, iter: 304,600> l_pix: 1.1511e-03 
+26-01-12 12:37:07.364 - INFO: <epoch: 90, iter: 304,700> l_pix: 1.7767e-03 
+26-01-12 12:37:27.988 - INFO: <epoch: 90, iter: 304,800> l_pix: 9.6745e-04 
+26-01-12 12:37:49.833 - INFO: <epoch: 90, iter: 304,900> l_pix: 2.0521e-03 
+26-01-12 12:38:11.030 - INFO: <epoch: 90, iter: 305,000> l_pix: 9.3762e-04 
+26-01-12 12:38:44.436 - INFO: <epoch: 90, iter: 305,100> l_pix: 1.4278e-03 
+26-01-12 12:39:04.664 - INFO: <epoch: 90, iter: 305,200> l_pix: 2.1053e-03 
+26-01-12 12:39:26.759 - INFO: <epoch: 90, iter: 305,300> l_pix: 1.5912e-03 
+26-01-12 12:39:47.579 - INFO: <epoch: 90, iter: 305,400> l_pix: 1.1607e-03 
+26-01-12 12:40:08.444 - INFO: <epoch: 90, iter: 305,500> l_pix: 1.8613e-03 
+26-01-12 12:40:32.273 - INFO: <epoch: 90, iter: 305,600> l_pix: 1.6236e-03 
+26-01-12 12:40:53.379 - INFO: <epoch: 90, iter: 305,700> l_pix: 1.3229e-03 
+26-01-12 12:41:14.237 - INFO: <epoch: 90, iter: 305,800> l_pix: 1.5787e-03 
+26-01-12 12:41:35.569 - INFO: <epoch: 90, iter: 305,900> l_pix: 1.3253e-03 
+26-01-12 12:41:58.534 - INFO: <epoch: 90, iter: 306,000> l_pix: 1.5053e-03 
+26-01-12 12:42:30.113 - INFO: <epoch: 90, iter: 306,100> l_pix: 9.0590e-04 
+26-01-12 12:42:52.752 - INFO: <epoch: 90, iter: 306,200> l_pix: 1.2396e-03 
+26-01-12 12:43:13.603 - INFO: <epoch: 90, iter: 306,300> l_pix: 1.2483e-03 
+26-01-12 12:43:34.296 - INFO: <epoch: 90, iter: 306,400> l_pix: 1.5716e-03 
+26-01-12 12:43:55.381 - INFO: <epoch: 90, iter: 306,500> l_pix: 1.0137e-03 
+26-01-12 12:44:18.324 - INFO: <epoch: 90, iter: 306,600> l_pix: 1.3457e-03 
+26-01-12 12:44:39.721 - INFO: <epoch: 90, iter: 306,700> l_pix: 1.8044e-03 
+26-01-12 12:45:02.851 - INFO: <epoch: 90, iter: 306,800> l_pix: 1.0392e-03 
+26-01-12 12:45:23.153 - INFO: <epoch: 90, iter: 306,900> l_pix: 1.9598e-03 
+26-01-12 12:45:46.501 - INFO: <epoch: 91, iter: 307,000> l_pix: 1.8645e-03 
+26-01-12 12:46:21.699 - INFO: <epoch: 91, iter: 307,100> l_pix: 1.6109e-03 
+26-01-12 12:46:43.453 - INFO: <epoch: 91, iter: 307,200> l_pix: 1.0928e-03 
+26-01-12 12:47:07.624 - INFO: <epoch: 91, iter: 307,300> l_pix: 1.2195e-03 
+26-01-12 12:47:29.908 - INFO: <epoch: 91, iter: 307,400> l_pix: 2.1098e-03 
+26-01-12 12:47:51.919 - INFO: <epoch: 91, iter: 307,500> l_pix: 2.3584e-03 
+26-01-12 12:48:14.261 - INFO: <epoch: 91, iter: 307,600> l_pix: 1.0089e-03 
+26-01-12 12:48:37.980 - INFO: <epoch: 91, iter: 307,700> l_pix: 1.8798e-03 
+26-01-12 12:48:59.492 - INFO: <epoch: 91, iter: 307,800> l_pix: 2.6273e-03 
+26-01-12 12:49:20.655 - INFO: <epoch: 91, iter: 307,900> l_pix: 1.5717e-03 
+26-01-12 12:49:43.609 - INFO: <epoch: 91, iter: 308,000> l_pix: 1.6663e-03 
+26-01-12 12:50:19.954 - INFO: <epoch: 91, iter: 308,100> l_pix: 1.1847e-03 
+26-01-12 12:50:42.739 - INFO: <epoch: 91, iter: 308,200> l_pix: 1.3919e-03 
+26-01-12 12:51:05.202 - INFO: <epoch: 91, iter: 308,300> l_pix: 1.9238e-03 
+26-01-12 12:51:27.213 - INFO: <epoch: 91, iter: 308,400> l_pix: 1.5322e-03 
+26-01-12 12:51:51.108 - INFO: <epoch: 91, iter: 308,500> l_pix: 1.5674e-03 
+26-01-12 12:52:13.680 - INFO: <epoch: 91, iter: 308,600> l_pix: 1.4722e-03 
+26-01-12 12:52:35.473 - INFO: <epoch: 91, iter: 308,700> l_pix: 1.5068e-03 
+26-01-12 12:52:57.972 - INFO: <epoch: 91, iter: 308,800> l_pix: 1.1268e-03 
+26-01-12 12:53:20.366 - INFO: <epoch: 91, iter: 308,900> l_pix: 1.2670e-03 
+26-01-12 12:53:44.624 - INFO: <epoch: 91, iter: 309,000> l_pix: 1.4374e-03 
+26-01-12 12:54:19.780 - INFO: <epoch: 91, iter: 309,100> l_pix: 1.5157e-03 
+26-01-12 12:54:41.811 - INFO: <epoch: 91, iter: 309,200> l_pix: 1.4165e-03 
+26-01-12 12:55:05.278 - INFO: <epoch: 91, iter: 309,300> l_pix: 1.2720e-03 
+26-01-12 12:55:28.390 - INFO: <epoch: 91, iter: 309,400> l_pix: 1.5409e-03 
+26-01-12 12:55:49.783 - INFO: <epoch: 91, iter: 309,500> l_pix: 1.8347e-03 
+26-01-12 12:56:13.026 - INFO: <epoch: 91, iter: 309,600> l_pix: 1.3530e-03 
+26-01-12 12:56:34.507 - INFO: <epoch: 91, iter: 309,700> l_pix: 1.9781e-03 
+26-01-12 12:56:58.146 - INFO: <epoch: 91, iter: 309,800> l_pix: 1.6988e-03 
+26-01-12 12:57:19.255 - INFO: <epoch: 91, iter: 309,900> l_pix: 1.0782e-03 
+26-01-12 12:57:41.120 - INFO: <epoch: 91, iter: 310,000> l_pix: 1.3097e-03 
+26-01-12 12:57:54.562 - INFO: Saving models and training states.
+26-01-12 12:58:00.855 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 12:58:22.337 - INFO: <epoch: 91, iter: 310,100> l_pix: 1.2590e-03 
+26-01-12 12:58:45.544 - INFO: <epoch: 91, iter: 310,200> l_pix: 1.1648e-03 
+26-01-12 12:59:07.915 - INFO: <epoch: 91, iter: 310,300> l_pix: 1.3896e-03 
+26-01-12 12:59:30.656 - INFO: <epoch: 92, iter: 310,400> l_pix: 9.5998e-04 
+26-01-12 12:59:53.259 - INFO: <epoch: 92, iter: 310,500> l_pix: 2.1353e-03 
+26-01-12 13:00:14.694 - INFO: <epoch: 92, iter: 310,600> l_pix: 1.4015e-03 
+26-01-12 13:00:38.186 - INFO: <epoch: 92, iter: 310,700> l_pix: 1.2220e-03 
+26-01-12 13:01:00.007 - INFO: <epoch: 92, iter: 310,800> l_pix: 1.8805e-03 
+26-01-12 13:01:23.769 - INFO: <epoch: 92, iter: 310,900> l_pix: 1.5865e-03 
+26-01-12 13:01:46.637 - INFO: <epoch: 92, iter: 311,000> l_pix: 1.9351e-03 
+26-01-12 13:02:20.486 - INFO: <epoch: 92, iter: 311,100> l_pix: 1.5147e-03 
+26-01-12 13:02:42.326 - INFO: <epoch: 92, iter: 311,200> l_pix: 1.6147e-03 
+26-01-12 13:03:04.526 - INFO: <epoch: 92, iter: 311,300> l_pix: 1.5238e-03 
+26-01-12 13:03:25.863 - INFO: <epoch: 92, iter: 311,400> l_pix: 1.4010e-03 
+26-01-12 13:03:47.864 - INFO: <epoch: 92, iter: 311,500> l_pix: 9.7881e-04 
+26-01-12 13:04:11.448 - INFO: <epoch: 92, iter: 311,600> l_pix: 1.4046e-03 
+26-01-12 13:04:33.513 - INFO: <epoch: 92, iter: 311,700> l_pix: 1.8130e-03 
+26-01-12 13:04:55.297 - INFO: <epoch: 92, iter: 311,800> l_pix: 1.8478e-03 
+26-01-12 13:05:18.097 - INFO: <epoch: 92, iter: 311,900> l_pix: 1.5051e-03 
+26-01-12 13:05:40.128 - INFO: <epoch: 92, iter: 312,000> l_pix: 1.6128e-03 
+26-01-12 13:06:16.837 - INFO: <epoch: 92, iter: 312,100> l_pix: 2.3215e-03 
+26-01-12 13:06:39.450 - INFO: <epoch: 92, iter: 312,200> l_pix: 1.6616e-03 
+26-01-12 13:07:03.558 - INFO: <epoch: 92, iter: 312,300> l_pix: 1.1903e-03 
+26-01-12 13:07:26.634 - INFO: <epoch: 92, iter: 312,400> l_pix: 1.6206e-03 
+26-01-12 13:07:48.292 - INFO: <epoch: 92, iter: 312,500> l_pix: 1.0809e-03 
+26-01-12 13:08:12.525 - INFO: <epoch: 92, iter: 312,600> l_pix: 1.1702e-03 
+26-01-12 13:08:34.587 - INFO: <epoch: 92, iter: 312,700> l_pix: 1.4663e-03 
+26-01-12 13:08:57.128 - INFO: <epoch: 92, iter: 312,800> l_pix: 1.4238e-03 
+26-01-12 13:09:21.698 - INFO: <epoch: 92, iter: 312,900> l_pix: 1.4067e-03 
+26-01-12 13:09:42.276 - INFO: <epoch: 92, iter: 313,000> l_pix: 1.4042e-03 
+26-01-12 13:10:20.866 - INFO: <epoch: 92, iter: 313,100> l_pix: 1.4499e-03 
+26-01-12 13:10:40.426 - INFO: <epoch: 92, iter: 313,200> l_pix: 1.1967e-03 
+26-01-12 13:11:04.487 - INFO: <epoch: 92, iter: 313,300> l_pix: 2.0454e-03 
+26-01-12 13:11:26.132 - INFO: <epoch: 92, iter: 313,400> l_pix: 1.6611e-03 
+26-01-12 13:11:49.618 - INFO: <epoch: 92, iter: 313,500> l_pix: 2.2964e-03 
+26-01-12 13:12:13.638 - INFO: <epoch: 92, iter: 313,600> l_pix: 1.1072e-03 
+26-01-12 13:12:35.932 - INFO: <epoch: 92, iter: 313,700> l_pix: 2.4029e-03 
+26-01-12 13:12:58.999 - INFO: <epoch: 92, iter: 313,800> l_pix: 1.4622e-03 
+26-01-12 13:13:21.648 - INFO: <epoch: 93, iter: 313,900> l_pix: 1.4938e-03 
+26-01-12 13:13:43.599 - INFO: <epoch: 93, iter: 314,000> l_pix: 1.6146e-03 
+26-01-12 13:14:21.214 - INFO: <epoch: 93, iter: 314,100> l_pix: 1.0911e-03 
+26-01-12 13:14:44.561 - INFO: <epoch: 93, iter: 314,200> l_pix: 1.8427e-03 
+26-01-12 13:15:07.897 - INFO: <epoch: 93, iter: 314,300> l_pix: 2.7211e-03 
+26-01-12 13:15:29.287 - INFO: <epoch: 93, iter: 314,400> l_pix: 1.5127e-03 
+26-01-12 13:15:50.569 - INFO: <epoch: 93, iter: 314,500> l_pix: 1.5609e-03 
+26-01-12 13:16:15.089 - INFO: <epoch: 93, iter: 314,600> l_pix: 1.1284e-03 
+26-01-12 13:16:36.030 - INFO: <epoch: 93, iter: 314,700> l_pix: 1.4561e-03 
+26-01-12 13:16:59.798 - INFO: <epoch: 93, iter: 314,800> l_pix: 1.5461e-03 
+26-01-12 13:17:22.101 - INFO: <epoch: 93, iter: 314,900> l_pix: 1.1303e-03 
+26-01-12 13:17:43.513 - INFO: <epoch: 93, iter: 315,000> l_pix: 2.0355e-03 
+26-01-12 13:18:20.544 - INFO: <epoch: 93, iter: 315,100> l_pix: 1.3112e-03 
+26-01-12 13:18:42.137 - INFO: <epoch: 93, iter: 315,200> l_pix: 1.9043e-03 
+26-01-12 13:19:04.408 - INFO: <epoch: 93, iter: 315,300> l_pix: 1.0839e-03 
+26-01-12 13:19:26.935 - INFO: <epoch: 93, iter: 315,400> l_pix: 9.3465e-04 
+26-01-12 13:19:51.211 - INFO: <epoch: 93, iter: 315,500> l_pix: 1.3421e-03 
+26-01-12 13:20:13.427 - INFO: <epoch: 93, iter: 315,600> l_pix: 8.4459e-04 
+26-01-12 13:20:35.637 - INFO: <epoch: 93, iter: 315,700> l_pix: 1.6194e-03 
+26-01-12 13:20:57.643 - INFO: <epoch: 93, iter: 315,800> l_pix: 1.2152e-03 
+26-01-12 13:21:19.987 - INFO: <epoch: 93, iter: 315,900> l_pix: 1.5888e-03 
+26-01-12 13:21:44.320 - INFO: <epoch: 93, iter: 316,000> l_pix: 1.2142e-03 
+26-01-12 13:22:18.217 - INFO: <epoch: 93, iter: 316,100> l_pix: 1.2408e-03 
+26-01-12 13:22:40.514 - INFO: <epoch: 93, iter: 316,200> l_pix: 1.3174e-03 
+26-01-12 13:23:04.436 - INFO: <epoch: 93, iter: 316,300> l_pix: 1.3327e-03 
+26-01-12 13:23:26.207 - INFO: <epoch: 93, iter: 316,400> l_pix: 1.8797e-03 
+26-01-12 13:23:48.295 - INFO: <epoch: 93, iter: 316,500> l_pix: 1.6937e-03 
+26-01-12 13:24:10.808 - INFO: <epoch: 93, iter: 316,600> l_pix: 1.2266e-03 
+26-01-12 13:24:34.086 - INFO: <epoch: 93, iter: 316,700> l_pix: 1.4825e-03 
+26-01-12 13:24:57.486 - INFO: <epoch: 93, iter: 316,800> l_pix: 1.2973e-03 
+26-01-12 13:25:19.846 - INFO: <epoch: 93, iter: 316,900> l_pix: 1.8166e-03 
+26-01-12 13:25:41.851 - INFO: <epoch: 93, iter: 317,000> l_pix: 1.8287e-03 
+26-01-12 13:26:18.410 - INFO: <epoch: 93, iter: 317,100> l_pix: 1.7509e-03 
+26-01-12 13:26:40.645 - INFO: <epoch: 93, iter: 317,200> l_pix: 9.6615e-04 
+26-01-12 13:27:03.816 - INFO: <epoch: 94, iter: 317,300> l_pix: 2.0767e-03 
+26-01-12 13:27:26.704 - INFO: <epoch: 94, iter: 317,400> l_pix: 2.0343e-03 
+26-01-12 13:27:50.997 - INFO: <epoch: 94, iter: 317,500> l_pix: 1.4115e-03 
+26-01-12 13:28:13.659 - INFO: <epoch: 94, iter: 317,600> l_pix: 1.5014e-03 
+26-01-12 13:28:36.427 - INFO: <epoch: 94, iter: 317,700> l_pix: 1.5765e-03 
+26-01-12 13:28:59.280 - INFO: <epoch: 94, iter: 317,800> l_pix: 1.3856e-03 
+26-01-12 13:29:21.527 - INFO: <epoch: 94, iter: 317,900> l_pix: 1.4157e-03 
+26-01-12 13:29:44.447 - INFO: <epoch: 94, iter: 318,000> l_pix: 1.7350e-03 
+26-01-12 13:30:19.979 - INFO: <epoch: 94, iter: 318,100> l_pix: 1.2972e-03 
+26-01-12 13:30:43.718 - INFO: <epoch: 94, iter: 318,200> l_pix: 2.2052e-03 
+26-01-12 13:31:08.241 - INFO: <epoch: 94, iter: 318,300> l_pix: 1.3565e-03 
+26-01-12 13:31:28.651 - INFO: <epoch: 94, iter: 318,400> l_pix: 1.1927e-03 
+26-01-12 13:31:51.505 - INFO: <epoch: 94, iter: 318,500> l_pix: 1.7641e-03 
+26-01-12 13:32:13.090 - INFO: <epoch: 94, iter: 318,600> l_pix: 1.6126e-03 
+26-01-12 13:32:37.099 - INFO: <epoch: 94, iter: 318,700> l_pix: 1.4493e-03 
+26-01-12 13:33:01.089 - INFO: <epoch: 94, iter: 318,800> l_pix: 1.4827e-03 
+26-01-12 13:33:20.897 - INFO: <epoch: 94, iter: 318,900> l_pix: 1.1740e-03 
+26-01-12 13:33:45.113 - INFO: <epoch: 94, iter: 319,000> l_pix: 1.6989e-03 
+26-01-12 13:34:20.663 - INFO: <epoch: 94, iter: 319,100> l_pix: 1.3682e-03 
+26-01-12 13:34:43.271 - INFO: <epoch: 94, iter: 319,200> l_pix: 1.0070e-03 
+26-01-12 13:35:05.632 - INFO: <epoch: 94, iter: 319,300> l_pix: 1.3982e-03 
+26-01-12 13:35:27.816 - INFO: <epoch: 94, iter: 319,400> l_pix: 1.0399e-03 
+26-01-12 13:35:48.429 - INFO: <epoch: 94, iter: 319,500> l_pix: 1.9212e-03 
+26-01-12 13:36:10.282 - INFO: <epoch: 94, iter: 319,600> l_pix: 2.0012e-03 
+26-01-12 13:36:31.997 - INFO: <epoch: 94, iter: 319,700> l_pix: 1.0596e-03 
+26-01-12 13:36:53.142 - INFO: <epoch: 94, iter: 319,800> l_pix: 1.4250e-03 
+26-01-12 13:37:15.670 - INFO: <epoch: 94, iter: 319,900> l_pix: 1.3768e-03 
+26-01-12 13:37:36.920 - INFO: <epoch: 94, iter: 320,000> l_pix: 1.7743e-03 
+26-01-12 13:37:48.872 - INFO: Saving models and training states.
+26-01-12 13:37:53.983 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 13:38:15.601 - INFO: <epoch: 94, iter: 320,100> l_pix: 9.6794e-04 
+26-01-12 13:38:34.877 - INFO: <epoch: 94, iter: 320,200> l_pix: 1.2845e-03 
+26-01-12 13:38:56.807 - INFO: <epoch: 94, iter: 320,300> l_pix: 2.3544e-03 
+26-01-12 13:39:17.274 - INFO: <epoch: 94, iter: 320,400> l_pix: 1.7187e-03 
+26-01-12 13:39:40.250 - INFO: <epoch: 94, iter: 320,500> l_pix: 1.4385e-03 
+26-01-12 13:40:00.702 - INFO: <epoch: 94, iter: 320,600> l_pix: 1.5703e-03 
+26-01-12 13:40:21.935 - INFO: <epoch: 94, iter: 320,700> l_pix: 1.1650e-03 
+26-01-12 13:40:43.312 - INFO: <epoch: 95, iter: 320,800> l_pix: 1.0920e-03 
+26-01-12 13:41:05.859 - INFO: <epoch: 95, iter: 320,900> l_pix: 1.3997e-03 
+26-01-12 13:41:26.979 - INFO: <epoch: 95, iter: 321,000> l_pix: 1.1244e-03 
+26-01-12 13:42:00.230 - INFO: <epoch: 95, iter: 321,100> l_pix: 1.4151e-03 
+26-01-12 13:42:21.949 - INFO: <epoch: 95, iter: 321,200> l_pix: 1.3337e-03 
+26-01-12 13:42:42.946 - INFO: <epoch: 95, iter: 321,300> l_pix: 1.3935e-03 
+26-01-12 13:43:04.004 - INFO: <epoch: 95, iter: 321,400> l_pix: 2.0060e-03 
+26-01-12 13:43:26.952 - INFO: <epoch: 95, iter: 321,500> l_pix: 1.2628e-03 
+26-01-12 13:43:49.137 - INFO: <epoch: 95, iter: 321,600> l_pix: 2.1094e-03 
+26-01-12 13:44:10.144 - INFO: <epoch: 95, iter: 321,700> l_pix: 2.2839e-03 
+26-01-12 13:44:32.005 - INFO: <epoch: 95, iter: 321,800> l_pix: 1.2025e-03 
+26-01-12 13:44:51.689 - INFO: <epoch: 95, iter: 321,900> l_pix: 1.5101e-03 
+26-01-12 13:45:14.672 - INFO: <epoch: 95, iter: 322,000> l_pix: 1.3011e-03 
+26-01-12 13:45:48.524 - INFO: <epoch: 95, iter: 322,100> l_pix: 1.4645e-03 
+26-01-12 13:46:09.324 - INFO: <epoch: 95, iter: 322,200> l_pix: 1.6373e-03 
+26-01-12 13:46:31.714 - INFO: <epoch: 95, iter: 322,300> l_pix: 1.6308e-03 
+26-01-12 13:46:53.438 - INFO: <epoch: 95, iter: 322,400> l_pix: 1.3501e-03 
+26-01-12 13:47:15.895 - INFO: <epoch: 95, iter: 322,500> l_pix: 1.6789e-03 
+26-01-12 13:47:38.347 - INFO: <epoch: 95, iter: 322,600> l_pix: 8.8014e-04 
+26-01-12 13:48:00.649 - INFO: <epoch: 95, iter: 322,700> l_pix: 1.6083e-03 
+26-01-12 13:48:23.207 - INFO: <epoch: 95, iter: 322,800> l_pix: 1.4330e-03 
+26-01-12 13:48:45.615 - INFO: <epoch: 95, iter: 322,900> l_pix: 1.2780e-03 
+26-01-12 13:49:09.203 - INFO: <epoch: 95, iter: 323,000> l_pix: 1.6623e-03 
+26-01-12 13:49:44.683 - INFO: <epoch: 95, iter: 323,100> l_pix: 1.4396e-03 
+26-01-12 13:50:07.819 - INFO: <epoch: 95, iter: 323,200> l_pix: 1.4222e-03 
+26-01-12 13:50:32.405 - INFO: <epoch: 95, iter: 323,300> l_pix: 1.3885e-03 
+26-01-12 13:50:54.479 - INFO: <epoch: 95, iter: 323,400> l_pix: 1.3340e-03 
+26-01-12 13:51:18.000 - INFO: <epoch: 95, iter: 323,500> l_pix: 1.2317e-03 
+26-01-12 13:51:38.839 - INFO: <epoch: 95, iter: 323,600> l_pix: 1.4298e-03 
+26-01-12 13:52:02.465 - INFO: <epoch: 95, iter: 323,700> l_pix: 1.3484e-03 
+26-01-12 13:52:24.317 - INFO: <epoch: 95, iter: 323,800> l_pix: 1.5362e-03 
+26-01-12 13:52:47.884 - INFO: <epoch: 95, iter: 323,900> l_pix: 1.4642e-03 
+26-01-12 13:53:10.534 - INFO: <epoch: 95, iter: 324,000> l_pix: 1.5522e-03 
+26-01-12 13:53:45.818 - INFO: <epoch: 95, iter: 324,100> l_pix: 2.2036e-03 
+26-01-12 13:54:09.363 - INFO: <epoch: 96, iter: 324,200> l_pix: 1.0141e-03 
+26-01-12 13:54:31.858 - INFO: <epoch: 96, iter: 324,300> l_pix: 1.6429e-03 
+26-01-12 13:54:54.875 - INFO: <epoch: 96, iter: 324,400> l_pix: 1.7132e-03 
+26-01-12 13:55:18.947 - INFO: <epoch: 96, iter: 324,500> l_pix: 1.6695e-03 
+26-01-12 13:55:41.018 - INFO: <epoch: 96, iter: 324,600> l_pix: 1.4517e-03 
+26-01-12 13:56:04.089 - INFO: <epoch: 96, iter: 324,700> l_pix: 1.2593e-03 
+26-01-12 13:56:27.666 - INFO: <epoch: 96, iter: 324,800> l_pix: 1.7130e-03 
+26-01-12 13:56:49.389 - INFO: <epoch: 96, iter: 324,900> l_pix: 1.1546e-03 
+26-01-12 13:57:11.200 - INFO: <epoch: 96, iter: 325,000> l_pix: 1.7419e-03 
+26-01-12 13:57:47.037 - INFO: <epoch: 96, iter: 325,100> l_pix: 2.1861e-03 
+26-01-12 13:58:09.593 - INFO: <epoch: 96, iter: 325,200> l_pix: 1.4703e-03 
+26-01-12 13:58:34.937 - INFO: <epoch: 96, iter: 325,300> l_pix: 1.8666e-03 
+26-01-12 13:58:57.642 - INFO: <epoch: 96, iter: 325,400> l_pix: 1.3956e-03 
+26-01-12 13:59:20.117 - INFO: <epoch: 96, iter: 325,500> l_pix: 1.7974e-03 
+26-01-12 13:59:42.732 - INFO: <epoch: 96, iter: 325,600> l_pix: 2.0213e-03 
+26-01-12 14:00:05.396 - INFO: <epoch: 96, iter: 325,700> l_pix: 1.5918e-03 
+26-01-12 14:00:27.788 - INFO: <epoch: 96, iter: 325,800> l_pix: 1.5034e-03 
+26-01-12 14:00:52.274 - INFO: <epoch: 96, iter: 325,900> l_pix: 1.1680e-03 
+26-01-12 14:01:15.008 - INFO: <epoch: 96, iter: 326,000> l_pix: 1.7741e-03 
+26-01-12 14:01:51.503 - INFO: <epoch: 96, iter: 326,100> l_pix: 9.5972e-04 
+26-01-12 14:02:12.957 - INFO: <epoch: 96, iter: 326,200> l_pix: 1.8615e-03 
+26-01-12 14:02:34.912 - INFO: <epoch: 96, iter: 326,300> l_pix: 1.2366e-03 
+26-01-12 14:02:56.741 - INFO: <epoch: 96, iter: 326,400> l_pix: 2.0405e-03 
+26-01-12 14:03:19.760 - INFO: <epoch: 96, iter: 326,500> l_pix: 1.1037e-03 
+26-01-12 14:03:43.617 - INFO: <epoch: 96, iter: 326,600> l_pix: 1.2268e-03 
+26-01-12 14:04:03.944 - INFO: <epoch: 96, iter: 326,700> l_pix: 1.8501e-03 
+26-01-12 14:04:26.337 - INFO: <epoch: 96, iter: 326,800> l_pix: 1.1762e-03 
+26-01-12 14:04:48.683 - INFO: <epoch: 96, iter: 326,900> l_pix: 1.2355e-03 
+26-01-12 14:05:10.416 - INFO: <epoch: 96, iter: 327,000> l_pix: 1.3348e-03 
+26-01-12 14:05:45.334 - INFO: <epoch: 96, iter: 327,100> l_pix: 1.1279e-03 
+26-01-12 14:06:07.204 - INFO: <epoch: 96, iter: 327,200> l_pix: 8.7978e-04 
+26-01-12 14:06:28.790 - INFO: <epoch: 96, iter: 327,300> l_pix: 2.3016e-03 
+26-01-12 14:06:51.804 - INFO: <epoch: 96, iter: 327,400> l_pix: 1.4396e-03 
+26-01-12 14:07:12.858 - INFO: <epoch: 96, iter: 327,500> l_pix: 1.4152e-03 
+26-01-12 14:07:35.228 - INFO: <epoch: 96, iter: 327,600> l_pix: 1.3175e-03 
+26-01-12 14:07:58.493 - INFO: <epoch: 97, iter: 327,700> l_pix: 1.4476e-03 
+26-01-12 14:08:18.108 - INFO: <epoch: 97, iter: 327,800> l_pix: 1.8381e-03 
+26-01-12 14:08:40.103 - INFO: <epoch: 97, iter: 327,900> l_pix: 2.5402e-03 
+26-01-12 14:09:01.753 - INFO: <epoch: 97, iter: 328,000> l_pix: 2.5749e-03 
+26-01-12 14:09:35.512 - INFO: <epoch: 97, iter: 328,100> l_pix: 1.1837e-03 
+26-01-12 14:09:57.890 - INFO: <epoch: 97, iter: 328,200> l_pix: 1.4967e-03 
+26-01-12 14:10:20.978 - INFO: <epoch: 97, iter: 328,300> l_pix: 1.4289e-03 
+26-01-12 14:10:41.187 - INFO: <epoch: 97, iter: 328,400> l_pix: 1.6908e-03 
+26-01-12 14:11:02.008 - INFO: <epoch: 97, iter: 328,500> l_pix: 1.3913e-03 
+26-01-12 14:11:23.070 - INFO: <epoch: 97, iter: 328,600> l_pix: 1.6536e-03 
+26-01-12 14:11:45.742 - INFO: <epoch: 97, iter: 328,700> l_pix: 1.6318e-03 
+26-01-12 14:12:07.241 - INFO: <epoch: 97, iter: 328,800> l_pix: 1.5223e-03 
+26-01-12 14:12:28.584 - INFO: <epoch: 97, iter: 328,900> l_pix: 1.6190e-03 
+26-01-12 14:12:49.657 - INFO: <epoch: 97, iter: 329,000> l_pix: 1.4370e-03 
+26-01-12 14:13:23.137 - INFO: <epoch: 97, iter: 329,100> l_pix: 1.5576e-03 
+26-01-12 14:13:43.844 - INFO: <epoch: 97, iter: 329,200> l_pix: 1.4518e-03 
+26-01-12 14:14:06.792 - INFO: <epoch: 97, iter: 329,300> l_pix: 1.6680e-03 
+26-01-12 14:14:27.209 - INFO: <epoch: 97, iter: 329,400> l_pix: 1.8427e-03 
+26-01-12 14:14:48.927 - INFO: <epoch: 97, iter: 329,500> l_pix: 1.3687e-03 
+26-01-12 14:15:09.906 - INFO: <epoch: 97, iter: 329,600> l_pix: 1.7603e-03 
+26-01-12 14:15:31.323 - INFO: <epoch: 97, iter: 329,700> l_pix: 1.8852e-03 
+26-01-12 14:15:53.793 - INFO: <epoch: 97, iter: 329,800> l_pix: 9.6522e-04 
+26-01-12 14:16:14.803 - INFO: <epoch: 97, iter: 329,900> l_pix: 1.6289e-03 
+26-01-12 14:16:35.929 - INFO: <epoch: 97, iter: 330,000> l_pix: 1.3997e-03 
+26-01-12 14:16:48.393 - INFO: Saving models and training states.
+26-01-12 14:16:52.035 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 14:17:12.480 - INFO: <epoch: 97, iter: 330,100> l_pix: 1.0173e-03 
+26-01-12 14:17:33.283 - INFO: <epoch: 97, iter: 330,200> l_pix: 1.1556e-03 
+26-01-12 14:17:54.218 - INFO: <epoch: 97, iter: 330,300> l_pix: 1.7009e-03 
+26-01-12 14:18:17.412 - INFO: <epoch: 97, iter: 330,400> l_pix: 1.5387e-03 
+26-01-12 14:18:38.186 - INFO: <epoch: 97, iter: 330,500> l_pix: 1.2138e-03 
+26-01-12 14:18:59.171 - INFO: <epoch: 97, iter: 330,600> l_pix: 1.2198e-03 
+26-01-12 14:19:21.857 - INFO: <epoch: 97, iter: 330,700> l_pix: 1.6059e-03 
+26-01-12 14:19:44.173 - INFO: <epoch: 97, iter: 330,800> l_pix: 1.4386e-03 
+26-01-12 14:20:04.835 - INFO: <epoch: 97, iter: 330,900> l_pix: 1.1578e-03 
+26-01-12 14:20:25.731 - INFO: <epoch: 97, iter: 331,000> l_pix: 1.4198e-03 
+26-01-12 14:20:58.165 - INFO: <epoch: 98, iter: 331,100> l_pix: 1.0000e-03 
+26-01-12 14:21:20.518 - INFO: <epoch: 98, iter: 331,200> l_pix: 1.6119e-03 
+26-01-12 14:21:41.246 - INFO: <epoch: 98, iter: 331,300> l_pix: 1.4275e-03 
+26-01-12 14:22:04.276 - INFO: <epoch: 98, iter: 331,400> l_pix: 1.0578e-03 
+26-01-12 14:22:24.056 - INFO: <epoch: 98, iter: 331,500> l_pix: 1.3959e-03 
+26-01-12 14:22:47.771 - INFO: <epoch: 98, iter: 331,600> l_pix: 1.1278e-03 
+26-01-12 14:23:07.689 - INFO: <epoch: 98, iter: 331,700> l_pix: 1.8710e-03 
+26-01-12 14:23:30.158 - INFO: <epoch: 98, iter: 331,800> l_pix: 1.4764e-03 
+26-01-12 14:23:51.658 - INFO: <epoch: 98, iter: 331,900> l_pix: 1.5013e-03 
+26-01-12 14:24:12.604 - INFO: <epoch: 98, iter: 332,000> l_pix: 1.7009e-03 
+26-01-12 14:24:46.171 - INFO: <epoch: 98, iter: 332,100> l_pix: 1.5961e-03 
+26-01-12 14:25:06.864 - INFO: <epoch: 98, iter: 332,200> l_pix: 1.2362e-03 
+26-01-12 14:25:27.958 - INFO: <epoch: 98, iter: 332,300> l_pix: 1.0863e-03 
+26-01-12 14:25:50.775 - INFO: <epoch: 98, iter: 332,400> l_pix: 1.9483e-03 
+26-01-12 14:26:12.045 - INFO: <epoch: 98, iter: 332,500> l_pix: 1.3529e-03 
+26-01-12 14:26:32.717 - INFO: <epoch: 98, iter: 332,600> l_pix: 1.4510e-03 
+26-01-12 14:26:53.663 - INFO: <epoch: 98, iter: 332,700> l_pix: 1.5802e-03 
+26-01-12 14:27:16.703 - INFO: <epoch: 98, iter: 332,800> l_pix: 1.6546e-03 
+26-01-12 14:27:37.498 - INFO: <epoch: 98, iter: 332,900> l_pix: 2.3629e-03 
+26-01-12 14:27:58.309 - INFO: <epoch: 98, iter: 333,000> l_pix: 1.7227e-03 
+26-01-12 14:28:32.488 - INFO: <epoch: 98, iter: 333,100> l_pix: 1.3840e-03 
+26-01-12 14:28:53.316 - INFO: <epoch: 98, iter: 333,200> l_pix: 1.3655e-03 
+26-01-12 14:29:15.764 - INFO: <epoch: 98, iter: 333,300> l_pix: 1.7272e-03 
+26-01-12 14:29:36.524 - INFO: <epoch: 98, iter: 333,400> l_pix: 1.0989e-03 
+26-01-12 14:29:58.262 - INFO: <epoch: 98, iter: 333,500> l_pix: 1.2995e-03 
+26-01-12 14:30:19.902 - INFO: <epoch: 98, iter: 333,600> l_pix: 1.5399e-03 
+26-01-12 14:30:39.973 - INFO: <epoch: 98, iter: 333,700> l_pix: 1.1932e-03 
+26-01-12 14:31:02.974 - INFO: <epoch: 98, iter: 333,800> l_pix: 1.2139e-03 
+26-01-12 14:31:22.901 - INFO: <epoch: 98, iter: 333,900> l_pix: 2.0256e-03 
+26-01-12 14:31:43.815 - INFO: <epoch: 98, iter: 334,000> l_pix: 1.1810e-03 
+26-01-12 14:32:18.220 - INFO: <epoch: 98, iter: 334,100> l_pix: 1.4645e-03 
+26-01-12 14:32:39.035 - INFO: <epoch: 98, iter: 334,200> l_pix: 1.4898e-03 
+26-01-12 14:33:00.336 - INFO: <epoch: 98, iter: 334,300> l_pix: 1.3751e-03 
+26-01-12 14:33:23.205 - INFO: <epoch: 98, iter: 334,400> l_pix: 1.8534e-03 
+26-01-12 14:33:43.945 - INFO: <epoch: 98, iter: 334,500> l_pix: 1.5548e-03 
+26-01-12 14:34:05.837 - INFO: <epoch: 99, iter: 334,600> l_pix: 9.0876e-04 
+26-01-12 14:34:26.683 - INFO: <epoch: 99, iter: 334,700> l_pix: 1.5776e-03 
+26-01-12 14:34:48.004 - INFO: <epoch: 99, iter: 334,800> l_pix: 1.4981e-03 
+26-01-12 14:35:10.457 - INFO: <epoch: 99, iter: 334,900> l_pix: 1.2895e-03 
+26-01-12 14:35:31.443 - INFO: <epoch: 99, iter: 335,000> l_pix: 1.1017e-03 
+26-01-12 14:36:05.430 - INFO: <epoch: 99, iter: 335,100> l_pix: 1.2470e-03 
+26-01-12 14:36:27.414 - INFO: <epoch: 99, iter: 335,200> l_pix: 1.4564e-03 
+26-01-12 14:36:47.435 - INFO: <epoch: 99, iter: 335,300> l_pix: 1.6857e-03 
+26-01-12 14:37:08.380 - INFO: <epoch: 99, iter: 335,400> l_pix: 8.8521e-04 
+26-01-12 14:37:31.088 - INFO: <epoch: 99, iter: 335,500> l_pix: 1.4424e-03 
+26-01-12 14:37:53.358 - INFO: <epoch: 99, iter: 335,600> l_pix: 1.2121e-03 
+26-01-12 14:38:13.639 - INFO: <epoch: 99, iter: 335,700> l_pix: 1.6348e-03 
+26-01-12 14:38:34.755 - INFO: <epoch: 99, iter: 335,800> l_pix: 1.0997e-03 
+26-01-12 14:38:56.713 - INFO: <epoch: 99, iter: 335,900> l_pix: 1.3793e-03 
+26-01-12 14:39:16.840 - INFO: <epoch: 99, iter: 336,000> l_pix: 1.4023e-03 
+26-01-12 14:39:50.886 - INFO: <epoch: 99, iter: 336,100> l_pix: 1.2034e-03 
+26-01-12 14:40:11.602 - INFO: <epoch: 99, iter: 336,200> l_pix: 1.1661e-03 
+26-01-12 14:40:33.655 - INFO: <epoch: 99, iter: 336,300> l_pix: 1.6618e-03 
+26-01-12 14:40:54.053 - INFO: <epoch: 99, iter: 336,400> l_pix: 1.1707e-03 
+26-01-12 14:41:15.907 - INFO: <epoch: 99, iter: 336,500> l_pix: 2.2568e-03 
+26-01-12 14:41:36.879 - INFO: <epoch: 99, iter: 336,600> l_pix: 1.2231e-03 
+26-01-12 14:41:58.715 - INFO: <epoch: 99, iter: 336,700> l_pix: 9.5459e-04 
+26-01-12 14:42:20.970 - INFO: <epoch: 99, iter: 336,800> l_pix: 3.0077e-03 
+26-01-12 14:42:42.049 - INFO: <epoch: 99, iter: 336,900> l_pix: 1.5646e-03 
+26-01-12 14:43:02.010 - INFO: <epoch: 99, iter: 337,000> l_pix: 1.1561e-03 
+26-01-12 14:43:36.037 - INFO: <epoch: 99, iter: 337,100> l_pix: 1.2907e-03 
+26-01-12 14:43:56.577 - INFO: <epoch: 99, iter: 337,200> l_pix: 1.4930e-03 
+26-01-12 14:44:17.313 - INFO: <epoch: 99, iter: 337,300> l_pix: 1.6984e-03 
+26-01-12 14:44:40.061 - INFO: <epoch: 99, iter: 337,400> l_pix: 1.6264e-03 
+26-01-12 14:45:00.985 - INFO: <epoch: 99, iter: 337,500> l_pix: 1.0548e-03 
+26-01-12 14:45:21.659 - INFO: <epoch: 99, iter: 337,600> l_pix: 1.6820e-03 
+26-01-12 14:45:42.381 - INFO: <epoch: 99, iter: 337,700> l_pix: 2.0543e-03 
+26-01-12 14:46:05.325 - INFO: <epoch: 99, iter: 337,800> l_pix: 1.1342e-03 
+26-01-12 14:46:26.492 - INFO: <epoch: 99, iter: 337,900> l_pix: 2.2602e-03 
+26-01-12 14:46:47.627 - INFO: <epoch:100, iter: 338,000> l_pix: 1.4508e-03 
+26-01-12 14:47:21.392 - INFO: <epoch:100, iter: 338,100> l_pix: 9.7254e-04 
+26-01-12 14:47:42.334 - INFO: <epoch:100, iter: 338,200> l_pix: 1.7365e-03 
+26-01-12 14:48:03.128 - INFO: <epoch:100, iter: 338,300> l_pix: 1.3063e-03 
+26-01-12 14:48:25.749 - INFO: <epoch:100, iter: 338,400> l_pix: 1.3291e-03 
+26-01-12 14:48:47.168 - INFO: <epoch:100, iter: 338,500> l_pix: 1.1928e-03 
+26-01-12 14:49:08.818 - INFO: <epoch:100, iter: 338,600> l_pix: 1.4584e-03 
+26-01-12 14:49:29.523 - INFO: <epoch:100, iter: 338,700> l_pix: 1.2901e-03 
+26-01-12 14:49:52.918 - INFO: <epoch:100, iter: 338,800> l_pix: 2.1264e-03 
+26-01-12 14:50:13.364 - INFO: <epoch:100, iter: 338,900> l_pix: 9.1633e-04 
+26-01-12 14:50:34.134 - INFO: <epoch:100, iter: 339,000> l_pix: 3.1824e-03 
+26-01-12 14:51:07.885 - INFO: <epoch:100, iter: 339,100> l_pix: 1.4873e-03 
+26-01-12 14:51:30.081 - INFO: <epoch:100, iter: 339,200> l_pix: 1.0423e-03 
+26-01-12 14:51:51.363 - INFO: <epoch:100, iter: 339,300> l_pix: 1.2076e-03 
+26-01-12 14:52:11.954 - INFO: <epoch:100, iter: 339,400> l_pix: 1.3568e-03 
+26-01-12 14:52:34.313 - INFO: <epoch:100, iter: 339,500> l_pix: 1.4685e-03 
+26-01-12 14:52:54.858 - INFO: <epoch:100, iter: 339,600> l_pix: 1.9902e-03 
+26-01-12 14:53:17.248 - INFO: <epoch:100, iter: 339,700> l_pix: 1.6019e-03 
+26-01-12 14:53:38.250 - INFO: <epoch:100, iter: 339,800> l_pix: 1.4403e-03 
+26-01-12 14:54:00.660 - INFO: <epoch:100, iter: 339,900> l_pix: 2.1418e-03 
+26-01-12 14:54:21.693 - INFO: <epoch:100, iter: 340,000> l_pix: 1.5365e-03 
+26-01-12 14:54:34.250 - INFO: Saving models and training states.
+26-01-12 14:54:40.846 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 14:55:02.301 - INFO: <epoch:100, iter: 340,100> l_pix: 1.3113e-03 
+26-01-12 14:55:22.285 - INFO: <epoch:100, iter: 340,200> l_pix: 1.2433e-03 
+26-01-12 14:55:42.938 - INFO: <epoch:100, iter: 340,300> l_pix: 1.3729e-03 
+26-01-12 14:56:04.741 - INFO: <epoch:100, iter: 340,400> l_pix: 1.3332e-03 
+26-01-12 14:56:25.660 - INFO: <epoch:100, iter: 340,500> l_pix: 1.2684e-03 
+26-01-12 14:56:47.359 - INFO: <epoch:100, iter: 340,600> l_pix: 1.2933e-03 
+26-01-12 14:57:08.237 - INFO: <epoch:100, iter: 340,700> l_pix: 1.4892e-03 
+26-01-12 14:57:29.147 - INFO: <epoch:100, iter: 340,800> l_pix: 2.3158e-03 
+26-01-12 14:57:52.376 - INFO: <epoch:100, iter: 340,900> l_pix: 1.4429e-03 
+26-01-12 14:58:13.747 - INFO: <epoch:100, iter: 341,000> l_pix: 2.4225e-03 
+26-01-12 14:58:48.572 - INFO: <epoch:100, iter: 341,100> l_pix: 1.0006e-03 
+26-01-12 14:59:09.511 - INFO: <epoch:100, iter: 341,200> l_pix: 1.4348e-03 
+26-01-12 14:59:30.808 - INFO: <epoch:100, iter: 341,300> l_pix: 1.0848e-03 
+26-01-12 14:59:51.501 - INFO: <epoch:100, iter: 341,400> l_pix: 1.2892e-03 
+26-01-12 15:00:14.315 - INFO: <epoch:101, iter: 341,500> l_pix: 1.5164e-03 
+26-01-12 15:00:36.093 - INFO: <epoch:101, iter: 341,600> l_pix: 1.7863e-03 
+26-01-12 15:00:57.029 - INFO: <epoch:101, iter: 341,700> l_pix: 1.8691e-03 
+26-01-12 15:01:18.007 - INFO: <epoch:101, iter: 341,800> l_pix: 1.5356e-03 
+26-01-12 15:01:40.184 - INFO: <epoch:101, iter: 341,900> l_pix: 7.5603e-04 
+26-01-12 15:02:01.133 - INFO: <epoch:101, iter: 342,000> l_pix: 1.5445e-03 
+26-01-12 15:02:35.463 - INFO: <epoch:101, iter: 342,100> l_pix: 1.8361e-03 
+26-01-12 15:02:57.194 - INFO: <epoch:101, iter: 342,200> l_pix: 1.3056e-03 
+26-01-12 15:03:17.053 - INFO: <epoch:101, iter: 342,300> l_pix: 1.9587e-03 
+26-01-12 15:03:39.889 - INFO: <epoch:101, iter: 342,400> l_pix: 1.2930e-03 
+26-01-12 15:04:00.179 - INFO: <epoch:101, iter: 342,500> l_pix: 1.6694e-03 
+26-01-12 15:04:22.660 - INFO: <epoch:101, iter: 342,600> l_pix: 1.1381e-03 
+26-01-12 15:04:42.890 - INFO: <epoch:101, iter: 342,700> l_pix: 1.2610e-03 
+26-01-12 15:05:04.603 - INFO: <epoch:101, iter: 342,800> l_pix: 1.3908e-03 
+26-01-12 15:05:26.361 - INFO: <epoch:101, iter: 342,900> l_pix: 1.4660e-03 
+26-01-12 15:05:49.107 - INFO: <epoch:101, iter: 343,000> l_pix: 1.6673e-03 
+26-01-12 15:06:20.981 - INFO: <epoch:101, iter: 343,100> l_pix: 1.2784e-03 
+26-01-12 15:06:42.401 - INFO: <epoch:101, iter: 343,200> l_pix: 1.7007e-03 
+26-01-12 15:07:05.438 - INFO: <epoch:101, iter: 343,300> l_pix: 1.1420e-03 
+26-01-12 15:07:26.096 - INFO: <epoch:101, iter: 343,400> l_pix: 1.7610e-03 
+26-01-12 15:07:47.308 - INFO: <epoch:101, iter: 343,500> l_pix: 1.5977e-03 
+26-01-12 15:08:09.697 - INFO: <epoch:101, iter: 343,600> l_pix: 1.6062e-03 
+26-01-12 15:08:30.017 - INFO: <epoch:101, iter: 343,700> l_pix: 1.8044e-03 
+26-01-12 15:08:51.855 - INFO: <epoch:101, iter: 343,800> l_pix: 1.4460e-03 
+26-01-12 15:09:12.376 - INFO: <epoch:101, iter: 343,900> l_pix: 1.5651e-03 
+26-01-12 15:09:34.704 - INFO: <epoch:101, iter: 344,000> l_pix: 1.0955e-03 
+26-01-12 15:10:08.592 - INFO: <epoch:101, iter: 344,100> l_pix: 1.4066e-03 
+26-01-12 15:10:29.473 - INFO: <epoch:101, iter: 344,200> l_pix: 1.3851e-03 
+26-01-12 15:10:50.469 - INFO: <epoch:101, iter: 344,300> l_pix: 1.0252e-03 
+26-01-12 15:11:11.582 - INFO: <epoch:101, iter: 344,400> l_pix: 9.8459e-04 
+26-01-12 15:11:33.452 - INFO: <epoch:101, iter: 344,500> l_pix: 1.0241e-03 
+26-01-12 15:11:53.982 - INFO: <epoch:101, iter: 344,600> l_pix: 9.4515e-04 
+26-01-12 15:12:16.646 - INFO: <epoch:101, iter: 344,700> l_pix: 1.4688e-03 
+26-01-12 15:12:37.566 - INFO: <epoch:101, iter: 344,800> l_pix: 1.5533e-03 
+26-01-12 15:12:58.967 - INFO: <epoch:102, iter: 344,900> l_pix: 1.5374e-03 
+26-01-12 15:13:22.901 - INFO: <epoch:102, iter: 345,000> l_pix: 1.3712e-03 
+26-01-12 15:13:54.258 - INFO: <epoch:102, iter: 345,100> l_pix: 1.5712e-03 
+26-01-12 15:14:17.251 - INFO: <epoch:102, iter: 345,200> l_pix: 1.3207e-03 
+26-01-12 15:14:38.919 - INFO: <epoch:102, iter: 345,300> l_pix: 2.0476e-03 
+26-01-12 15:14:59.211 - INFO: <epoch:102, iter: 345,400> l_pix: 1.8811e-03 
+26-01-12 15:15:20.400 - INFO: <epoch:102, iter: 345,500> l_pix: 1.6243e-03 
+26-01-12 15:15:43.443 - INFO: <epoch:102, iter: 345,600> l_pix: 2.1425e-03 
+26-01-12 15:16:05.100 - INFO: <epoch:102, iter: 345,700> l_pix: 1.7371e-03 
+26-01-12 15:16:26.370 - INFO: <epoch:102, iter: 345,800> l_pix: 1.5317e-03 
+26-01-12 15:16:47.318 - INFO: <epoch:102, iter: 345,900> l_pix: 1.3974e-03 
+26-01-12 15:17:10.639 - INFO: <epoch:102, iter: 346,000> l_pix: 1.6626e-03 
+26-01-12 15:17:43.212 - INFO: <epoch:102, iter: 346,100> l_pix: 1.3963e-03 
+26-01-12 15:18:05.812 - INFO: <epoch:102, iter: 346,200> l_pix: 1.5813e-03 
+26-01-12 15:18:26.583 - INFO: <epoch:102, iter: 346,300> l_pix: 1.5311e-03 
+26-01-12 15:18:48.290 - INFO: <epoch:102, iter: 346,400> l_pix: 1.4066e-03 
+26-01-12 15:19:08.290 - INFO: <epoch:102, iter: 346,500> l_pix: 1.6247e-03 
+26-01-12 15:19:31.786 - INFO: <epoch:102, iter: 346,600> l_pix: 1.5207e-03 
+26-01-12 15:19:52.791 - INFO: <epoch:102, iter: 346,700> l_pix: 2.3412e-03 
+26-01-12 15:20:13.621 - INFO: <epoch:102, iter: 346,800> l_pix: 9.7551e-04 
+26-01-12 15:20:34.484 - INFO: <epoch:102, iter: 346,900> l_pix: 1.2667e-03 
+26-01-12 15:20:56.890 - INFO: <epoch:102, iter: 347,000> l_pix: 1.3147e-03 
+26-01-12 15:21:30.401 - INFO: <epoch:102, iter: 347,100> l_pix: 1.2546e-03 
+26-01-12 15:21:51.213 - INFO: <epoch:102, iter: 347,200> l_pix: 1.3420e-03 
+26-01-12 15:22:12.130 - INFO: <epoch:102, iter: 347,300> l_pix: 1.4758e-03 
+26-01-12 15:22:35.058 - INFO: <epoch:102, iter: 347,400> l_pix: 1.6020e-03 
+26-01-12 15:22:56.095 - INFO: <epoch:102, iter: 347,500> l_pix: 1.5377e-03 
+26-01-12 15:23:18.813 - INFO: <epoch:102, iter: 347,600> l_pix: 1.4408e-03 
+26-01-12 15:23:38.670 - INFO: <epoch:102, iter: 347,700> l_pix: 1.1032e-03 
+26-01-12 15:24:00.740 - INFO: <epoch:102, iter: 347,800> l_pix: 1.6694e-03 
+26-01-12 15:24:22.932 - INFO: <epoch:102, iter: 347,900> l_pix: 1.2142e-03 
+26-01-12 15:24:43.302 - INFO: <epoch:102, iter: 348,000> l_pix: 1.6476e-03 
+26-01-12 15:25:17.049 - INFO: <epoch:102, iter: 348,100> l_pix: 1.3588e-03 
+26-01-12 15:25:38.984 - INFO: <epoch:102, iter: 348,200> l_pix: 1.7748e-03 
+26-01-12 15:26:03.023 - INFO: <epoch:102, iter: 348,300> l_pix: 1.3364e-03 
+26-01-12 15:26:24.201 - INFO: <epoch:103, iter: 348,400> l_pix: 9.4994e-04 
+26-01-12 15:26:45.837 - INFO: <epoch:103, iter: 348,500> l_pix: 1.3002e-03 
+26-01-12 15:27:07.156 - INFO: <epoch:103, iter: 348,600> l_pix: 1.7232e-03 
+26-01-12 15:27:29.775 - INFO: <epoch:103, iter: 348,700> l_pix: 1.3300e-03 
+26-01-12 15:27:51.199 - INFO: <epoch:103, iter: 348,800> l_pix: 2.3683e-03 
+26-01-12 15:28:13.459 - INFO: <epoch:103, iter: 348,900> l_pix: 1.2375e-03 
+26-01-12 15:28:34.075 - INFO: <epoch:103, iter: 349,000> l_pix: 8.5085e-04 
+26-01-12 15:29:07.799 - INFO: <epoch:103, iter: 349,100> l_pix: 1.5892e-03 
+26-01-12 15:29:29.056 - INFO: <epoch:103, iter: 349,200> l_pix: 8.1618e-04 
+26-01-12 15:29:52.090 - INFO: <epoch:103, iter: 349,300> l_pix: 1.5254e-03 
+26-01-12 15:30:13.454 - INFO: <epoch:103, iter: 349,400> l_pix: 1.0107e-03 
+26-01-12 15:30:34.188 - INFO: <epoch:103, iter: 349,500> l_pix: 1.8972e-03 
+26-01-12 15:30:56.109 - INFO: <epoch:103, iter: 349,600> l_pix: 1.1486e-03 
+26-01-12 15:31:18.850 - INFO: <epoch:103, iter: 349,700> l_pix: 1.3391e-03 
+26-01-12 15:31:39.791 - INFO: <epoch:103, iter: 349,800> l_pix: 1.8069e-03 
+26-01-12 15:32:01.038 - INFO: <epoch:103, iter: 349,900> l_pix: 1.7512e-03 
+26-01-12 15:32:21.979 - INFO: <epoch:103, iter: 350,000> l_pix: 1.6194e-03 
+26-01-12 15:32:34.949 - INFO: Saving models and training states.
+26-01-12 15:32:38.918 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 15:32:58.917 - INFO: <epoch:103, iter: 350,100> l_pix: 1.9063e-03 
+26-01-12 15:33:20.616 - INFO: <epoch:103, iter: 350,200> l_pix: 1.4258e-03 
+26-01-12 15:33:41.362 - INFO: <epoch:103, iter: 350,300> l_pix: 1.5231e-03 
+26-01-12 15:34:04.154 - INFO: <epoch:103, iter: 350,400> l_pix: 1.3767e-03 
+26-01-12 15:34:25.113 - INFO: <epoch:103, iter: 350,500> l_pix: 1.4560e-03 
+26-01-12 15:34:46.326 - INFO: <epoch:103, iter: 350,600> l_pix: 1.0289e-03 
+26-01-12 15:35:07.533 - INFO: <epoch:103, iter: 350,700> l_pix: 2.1184e-03 
+26-01-12 15:35:30.289 - INFO: <epoch:103, iter: 350,800> l_pix: 1.3044e-03 
+26-01-12 15:35:51.758 - INFO: <epoch:103, iter: 350,900> l_pix: 1.6756e-03 
+26-01-12 15:36:13.113 - INFO: <epoch:103, iter: 351,000> l_pix: 2.1759e-03 
+26-01-12 15:36:46.862 - INFO: <epoch:103, iter: 351,100> l_pix: 1.5570e-03 
+26-01-12 15:37:07.900 - INFO: <epoch:103, iter: 351,200> l_pix: 1.4361e-03 
+26-01-12 15:37:28.909 - INFO: <epoch:103, iter: 351,300> l_pix: 1.8507e-03 
+26-01-12 15:37:52.225 - INFO: <epoch:103, iter: 351,400> l_pix: 2.4418e-03 
+26-01-12 15:38:13.148 - INFO: <epoch:103, iter: 351,500> l_pix: 1.3935e-03 
+26-01-12 15:38:35.264 - INFO: <epoch:103, iter: 351,600> l_pix: 1.3738e-03 
+26-01-12 15:38:55.740 - INFO: <epoch:103, iter: 351,700> l_pix: 1.4399e-03 
+26-01-12 15:39:17.165 - INFO: <epoch:104, iter: 351,800> l_pix: 1.3092e-03 
+26-01-12 15:39:39.686 - INFO: <epoch:104, iter: 351,900> l_pix: 1.7862e-03 
+26-01-12 15:40:01.564 - INFO: <epoch:104, iter: 352,000> l_pix: 1.0248e-03 
+26-01-12 15:40:35.326 - INFO: <epoch:104, iter: 352,100> l_pix: 1.5494e-03 
+26-01-12 15:40:56.994 - INFO: <epoch:104, iter: 352,200> l_pix: 1.2658e-03 
+26-01-12 15:41:18.013 - INFO: <epoch:104, iter: 352,300> l_pix: 2.4602e-03 
+26-01-12 15:41:38.901 - INFO: <epoch:104, iter: 352,400> l_pix: 1.3439e-03 
+26-01-12 15:42:02.144 - INFO: <epoch:104, iter: 352,500> l_pix: 1.2308e-03 
+26-01-12 15:42:23.430 - INFO: <epoch:104, iter: 352,600> l_pix: 1.5240e-03 
+26-01-12 15:42:44.495 - INFO: <epoch:104, iter: 352,700> l_pix: 1.9471e-03 
+26-01-12 15:43:05.973 - INFO: <epoch:104, iter: 352,800> l_pix: 1.6542e-03 
+26-01-12 15:43:28.982 - INFO: <epoch:104, iter: 352,900> l_pix: 1.2618e-03 
+26-01-12 15:43:49.791 - INFO: <epoch:104, iter: 353,000> l_pix: 1.8640e-03 
+26-01-12 15:44:23.393 - INFO: <epoch:104, iter: 353,100> l_pix: 1.3218e-03 
+26-01-12 15:44:44.199 - INFO: <epoch:104, iter: 353,200> l_pix: 1.6902e-03 
+26-01-12 15:45:05.581 - INFO: <epoch:104, iter: 353,300> l_pix: 1.2505e-03 
+26-01-12 15:45:26.831 - INFO: <epoch:104, iter: 353,400> l_pix: 1.6892e-03 
+26-01-12 15:45:49.630 - INFO: <epoch:104, iter: 353,500> l_pix: 1.2140e-03 
+26-01-12 15:46:11.283 - INFO: <epoch:104, iter: 353,600> l_pix: 1.7985e-03 
+26-01-12 15:46:32.262 - INFO: <epoch:104, iter: 353,700> l_pix: 1.7254e-03 
+26-01-12 15:46:54.307 - INFO: <epoch:104, iter: 353,800> l_pix: 1.4078e-03 
+26-01-12 15:47:16.912 - INFO: <epoch:104, iter: 353,900> l_pix: 1.1952e-03 
+26-01-12 15:47:36.534 - INFO: <epoch:104, iter: 354,000> l_pix: 2.2753e-03 
+26-01-12 15:48:10.724 - INFO: <epoch:104, iter: 354,100> l_pix: 1.2171e-03 
+26-01-12 15:48:32.793 - INFO: <epoch:104, iter: 354,200> l_pix: 1.3052e-03 
+26-01-12 15:48:55.293 - INFO: <epoch:104, iter: 354,300> l_pix: 9.4851e-04 
+26-01-12 15:49:16.854 - INFO: <epoch:104, iter: 354,400> l_pix: 1.9321e-03 
+26-01-12 15:49:37.380 - INFO: <epoch:104, iter: 354,500> l_pix: 1.5713e-03 
+26-01-12 15:49:59.450 - INFO: <epoch:104, iter: 354,600> l_pix: 1.0443e-03 
+26-01-12 15:50:22.034 - INFO: <epoch:104, iter: 354,700> l_pix: 3.1184e-03 
+26-01-12 15:50:42.333 - INFO: <epoch:104, iter: 354,800> l_pix: 1.1761e-03 
+26-01-12 15:51:02.870 - INFO: <epoch:104, iter: 354,900> l_pix: 1.1232e-03 
+26-01-12 15:51:26.450 - INFO: <epoch:104, iter: 355,000> l_pix: 1.7032e-03 
+26-01-12 15:51:59.537 - INFO: <epoch:104, iter: 355,100> l_pix: 1.1457e-03 
+26-01-12 15:52:20.694 - INFO: <epoch:104, iter: 355,200> l_pix: 9.4341e-04 
+26-01-12 15:52:42.484 - INFO: <epoch:105, iter: 355,300> l_pix: 1.1457e-03 
+26-01-12 15:53:04.475 - INFO: <epoch:105, iter: 355,400> l_pix: 1.3317e-03 
+26-01-12 15:53:24.565 - INFO: <epoch:105, iter: 355,500> l_pix: 1.9086e-03 
+26-01-12 15:53:47.497 - INFO: <epoch:105, iter: 355,600> l_pix: 1.5968e-03 
+26-01-12 15:54:08.612 - INFO: <epoch:105, iter: 355,700> l_pix: 1.7947e-03 
+26-01-12 15:54:29.660 - INFO: <epoch:105, iter: 355,800> l_pix: 1.5303e-03 
+26-01-12 15:54:51.277 - INFO: <epoch:105, iter: 355,900> l_pix: 1.3788e-03 
+26-01-12 15:55:14.090 - INFO: <epoch:105, iter: 356,000> l_pix: 1.1772e-03 
+26-01-12 15:55:47.418 - INFO: <epoch:105, iter: 356,100> l_pix: 2.5708e-03 
+26-01-12 15:56:08.578 - INFO: <epoch:105, iter: 356,200> l_pix: 1.8203e-03 
+26-01-12 15:56:31.155 - INFO: <epoch:105, iter: 356,300> l_pix: 1.6183e-03 
+26-01-12 15:56:52.091 - INFO: <epoch:105, iter: 356,400> l_pix: 1.2579e-03 
+26-01-12 15:57:13.009 - INFO: <epoch:105, iter: 356,500> l_pix: 1.6411e-03 
+26-01-12 15:57:35.810 - INFO: <epoch:105, iter: 356,600> l_pix: 1.7054e-03 
+26-01-12 15:57:56.005 - INFO: <epoch:105, iter: 356,700> l_pix: 1.6032e-03 
+26-01-12 15:58:17.787 - INFO: <epoch:105, iter: 356,800> l_pix: 1.2694e-03 
+26-01-12 15:58:39.839 - INFO: <epoch:105, iter: 356,900> l_pix: 1.5948e-03 
+26-01-12 15:59:01.173 - INFO: <epoch:105, iter: 357,000> l_pix: 1.2848e-03 
+26-01-12 15:59:34.396 - INFO: <epoch:105, iter: 357,100> l_pix: 1.8496e-03 
+26-01-12 15:59:57.631 - INFO: <epoch:105, iter: 357,200> l_pix: 1.8272e-03 
+26-01-12 16:00:18.617 - INFO: <epoch:105, iter: 357,300> l_pix: 1.4407e-03 
+26-01-12 16:00:39.530 - INFO: <epoch:105, iter: 357,400> l_pix: 1.9797e-03 
+26-01-12 16:01:01.172 - INFO: <epoch:105, iter: 357,500> l_pix: 1.4650e-03 
+26-01-12 16:01:23.971 - INFO: <epoch:105, iter: 357,600> l_pix: 2.3555e-03 
+26-01-12 16:01:44.835 - INFO: <epoch:105, iter: 357,700> l_pix: 1.6619e-03 
+26-01-12 16:02:05.326 - INFO: <epoch:105, iter: 357,800> l_pix: 7.5927e-04 
+26-01-12 16:02:26.672 - INFO: <epoch:105, iter: 357,900> l_pix: 1.5976e-03 
+26-01-12 16:02:47.322 - INFO: <epoch:105, iter: 358,000> l_pix: 1.5664e-03 
+26-01-12 16:03:21.117 - INFO: <epoch:105, iter: 358,100> l_pix: 1.1960e-03 
+26-01-12 16:03:43.905 - INFO: <epoch:105, iter: 358,200> l_pix: 1.5804e-03 
+26-01-12 16:04:04.680 - INFO: <epoch:105, iter: 358,300> l_pix: 1.0756e-03 
+26-01-12 16:04:25.716 - INFO: <epoch:105, iter: 358,400> l_pix: 1.3197e-03 
+26-01-12 16:04:46.380 - INFO: <epoch:105, iter: 358,500> l_pix: 2.1326e-03 
+26-01-12 16:05:08.866 - INFO: <epoch:105, iter: 358,600> l_pix: 1.4416e-03 
+26-01-12 16:05:30.347 - INFO: <epoch:106, iter: 358,700> l_pix: 9.8922e-04 
+26-01-12 16:05:52.702 - INFO: <epoch:106, iter: 358,800> l_pix: 1.6771e-03 
+26-01-12 16:06:12.447 - INFO: <epoch:106, iter: 358,900> l_pix: 1.8239e-03 
+26-01-12 16:06:33.188 - INFO: <epoch:106, iter: 359,000> l_pix: 1.5855e-03 
+26-01-12 16:07:07.371 - INFO: <epoch:106, iter: 359,100> l_pix: 1.8018e-03 
+26-01-12 16:07:29.644 - INFO: <epoch:106, iter: 359,200> l_pix: 1.4307e-03 
+26-01-12 16:07:50.356 - INFO: <epoch:106, iter: 359,300> l_pix: 2.5889e-03 
+26-01-12 16:08:11.705 - INFO: <epoch:106, iter: 359,400> l_pix: 1.0718e-03 
+26-01-12 16:08:32.730 - INFO: <epoch:106, iter: 359,500> l_pix: 1.2594e-03 
+26-01-12 16:08:54.786 - INFO: <epoch:106, iter: 359,600> l_pix: 1.1843e-03 
+26-01-12 16:09:16.857 - INFO: <epoch:106, iter: 359,700> l_pix: 1.6299e-03 
+26-01-12 16:09:37.472 - INFO: <epoch:106, iter: 359,800> l_pix: 1.5180e-03 
+26-01-12 16:09:58.250 - INFO: <epoch:106, iter: 359,900> l_pix: 9.1516e-04 
+26-01-12 16:10:20.075 - INFO: <epoch:106, iter: 360,000> l_pix: 1.0434e-03 
+26-01-12 16:10:32.599 - INFO: Saving models and training states.
+26-01-12 16:10:39.458 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 16:11:00.180 - INFO: <epoch:106, iter: 360,100> l_pix: 1.3888e-03 
+26-01-12 16:11:20.856 - INFO: <epoch:106, iter: 360,200> l_pix: 1.7046e-03 
+26-01-12 16:11:43.321 - INFO: <epoch:106, iter: 360,300> l_pix: 1.0951e-03 
+26-01-12 16:12:04.184 - INFO: <epoch:106, iter: 360,400> l_pix: 1.3314e-03 
+26-01-12 16:12:24.737 - INFO: <epoch:106, iter: 360,500> l_pix: 1.6075e-03 
+26-01-12 16:12:45.685 - INFO: <epoch:106, iter: 360,600> l_pix: 1.1889e-03 
+26-01-12 16:13:08.314 - INFO: <epoch:106, iter: 360,700> l_pix: 1.0993e-03 
+26-01-12 16:13:29.100 - INFO: <epoch:106, iter: 360,800> l_pix: 1.0416e-03 
+26-01-12 16:13:49.730 - INFO: <epoch:106, iter: 360,900> l_pix: 9.1055e-04 
+26-01-12 16:14:11.071 - INFO: <epoch:106, iter: 361,000> l_pix: 1.6179e-03 
+26-01-12 16:14:44.548 - INFO: <epoch:106, iter: 361,100> l_pix: 1.4906e-03 
+26-01-12 16:15:05.734 - INFO: <epoch:106, iter: 361,200> l_pix: 1.2836e-03 
+26-01-12 16:15:28.102 - INFO: <epoch:106, iter: 361,300> l_pix: 1.5302e-03 
+26-01-12 16:15:49.341 - INFO: <epoch:106, iter: 361,400> l_pix: 1.0710e-03 
+26-01-12 16:16:10.382 - INFO: <epoch:106, iter: 361,500> l_pix: 1.3041e-03 
+26-01-12 16:16:31.392 - INFO: <epoch:106, iter: 361,600> l_pix: 1.4397e-03 
+26-01-12 16:16:54.161 - INFO: <epoch:106, iter: 361,700> l_pix: 1.1108e-03 
+26-01-12 16:17:14.732 - INFO: <epoch:106, iter: 361,800> l_pix: 1.3551e-03 
+26-01-12 16:17:35.715 - INFO: <epoch:106, iter: 361,900> l_pix: 1.5112e-03 
+26-01-12 16:17:56.594 - INFO: <epoch:106, iter: 362,000> l_pix: 1.1396e-03 
+26-01-12 16:18:30.418 - INFO: <epoch:106, iter: 362,100> l_pix: 1.2211e-03 
+26-01-12 16:18:52.101 - INFO: <epoch:107, iter: 362,200> l_pix: 1.5231e-03 
+26-01-12 16:19:14.734 - INFO: <epoch:107, iter: 362,300> l_pix: 1.5580e-03 
+26-01-12 16:19:35.799 - INFO: <epoch:107, iter: 362,400> l_pix: 1.4475e-03 
+26-01-12 16:19:56.854 - INFO: <epoch:107, iter: 362,500> l_pix: 1.1287e-03 
+26-01-12 16:20:17.651 - INFO: <epoch:107, iter: 362,600> l_pix: 1.5294e-03 
+26-01-12 16:20:39.283 - INFO: <epoch:107, iter: 362,700> l_pix: 1.6453e-03 
+26-01-12 16:21:01.471 - INFO: <epoch:107, iter: 362,800> l_pix: 1.6622e-03 
+26-01-12 16:21:22.156 - INFO: <epoch:107, iter: 362,900> l_pix: 9.8428e-04 
+26-01-12 16:21:43.051 - INFO: <epoch:107, iter: 363,000> l_pix: 1.0556e-03 
+26-01-12 16:22:19.628 - INFO: <epoch:107, iter: 363,100> l_pix: 1.3012e-03 
+26-01-12 16:22:41.860 - INFO: <epoch:107, iter: 363,200> l_pix: 1.4036e-03 
+26-01-12 16:23:03.740 - INFO: <epoch:107, iter: 363,300> l_pix: 1.6370e-03 
+26-01-12 16:23:27.530 - INFO: <epoch:107, iter: 363,400> l_pix: 9.6138e-04 
+26-01-12 16:23:49.847 - INFO: <epoch:107, iter: 363,500> l_pix: 2.1291e-03 
+26-01-12 16:24:11.786 - INFO: <epoch:107, iter: 363,600> l_pix: 1.1737e-03 
+26-01-12 16:24:33.794 - INFO: <epoch:107, iter: 363,700> l_pix: 1.4147e-03 
+26-01-12 16:24:55.937 - INFO: <epoch:107, iter: 363,800> l_pix: 1.9146e-03 
+26-01-12 16:25:19.122 - INFO: <epoch:107, iter: 363,900> l_pix: 1.8169e-03 
+26-01-12 16:25:41.339 - INFO: <epoch:107, iter: 364,000> l_pix: 1.6005e-03 
+26-01-12 16:26:17.159 - INFO: <epoch:107, iter: 364,100> l_pix: 1.9529e-03 
+26-01-12 16:26:38.996 - INFO: <epoch:107, iter: 364,200> l_pix: 1.7794e-03 
+26-01-12 16:27:01.686 - INFO: <epoch:107, iter: 364,300> l_pix: 1.8203e-03 
+26-01-12 16:27:24.736 - INFO: <epoch:107, iter: 364,400> l_pix: 1.2455e-03 
+26-01-12 16:27:47.724 - INFO: <epoch:107, iter: 364,500> l_pix: 1.1353e-03 
+26-01-12 16:28:10.168 - INFO: <epoch:107, iter: 364,600> l_pix: 2.3984e-03 
+26-01-12 16:28:33.672 - INFO: <epoch:107, iter: 364,700> l_pix: 1.1169e-03 
+26-01-12 16:28:56.523 - INFO: <epoch:107, iter: 364,800> l_pix: 1.4368e-03 
+26-01-12 16:29:18.914 - INFO: <epoch:107, iter: 364,900> l_pix: 1.7176e-03 
+26-01-12 16:29:41.322 - INFO: <epoch:107, iter: 365,000> l_pix: 2.5654e-03 
+26-01-12 16:30:17.627 - INFO: <epoch:107, iter: 365,100> l_pix: 1.5022e-03 
+26-01-12 16:30:40.210 - INFO: <epoch:107, iter: 365,200> l_pix: 2.2857e-03 
+26-01-12 16:31:02.506 - INFO: <epoch:107, iter: 365,300> l_pix: 1.4328e-03 
+26-01-12 16:31:26.995 - INFO: <epoch:107, iter: 365,400> l_pix: 1.6751e-03 
+26-01-12 16:31:48.630 - INFO: <epoch:107, iter: 365,500> l_pix: 1.7984e-03 
+26-01-12 16:32:12.318 - INFO: <epoch:108, iter: 365,600> l_pix: 1.3654e-03 
+26-01-12 16:32:35.405 - INFO: <epoch:108, iter: 365,700> l_pix: 9.5855e-04 
+26-01-12 16:32:58.058 - INFO: <epoch:108, iter: 365,800> l_pix: 3.2013e-03 
+26-01-12 16:33:20.197 - INFO: <epoch:108, iter: 365,900> l_pix: 1.2373e-03 
+26-01-12 16:33:44.464 - INFO: <epoch:108, iter: 366,000> l_pix: 1.3434e-03 
+26-01-12 16:34:19.163 - INFO: <epoch:108, iter: 366,100> l_pix: 1.2875e-03 
+26-01-12 16:34:43.355 - INFO: <epoch:108, iter: 366,200> l_pix: 1.2577e-03 
+26-01-12 16:35:05.949 - INFO: <epoch:108, iter: 366,300> l_pix: 1.1771e-03 
+26-01-12 16:35:28.426 - INFO: <epoch:108, iter: 366,400> l_pix: 1.4268e-03 
+26-01-12 16:35:50.976 - INFO: <epoch:108, iter: 366,500> l_pix: 1.6782e-03 
+26-01-12 16:36:12.942 - INFO: <epoch:108, iter: 366,600> l_pix: 1.7841e-03 
+26-01-12 16:36:37.646 - INFO: <epoch:108, iter: 366,700> l_pix: 1.7862e-03 
+26-01-12 16:37:00.449 - INFO: <epoch:108, iter: 366,800> l_pix: 1.8423e-03 
+26-01-12 16:37:22.145 - INFO: <epoch:108, iter: 366,900> l_pix: 1.5707e-03 
+26-01-12 16:37:45.670 - INFO: <epoch:108, iter: 367,000> l_pix: 1.6796e-03 
+26-01-12 16:38:21.789 - INFO: <epoch:108, iter: 367,100> l_pix: 1.0323e-03 
+26-01-12 16:38:43.988 - INFO: <epoch:108, iter: 367,200> l_pix: 1.3082e-03 
+26-01-12 16:39:05.239 - INFO: <epoch:108, iter: 367,300> l_pix: 1.8958e-03 
+26-01-12 16:39:26.707 - INFO: <epoch:108, iter: 367,400> l_pix: 1.4252e-03 
+26-01-12 16:39:51.023 - INFO: <epoch:108, iter: 367,500> l_pix: 7.5412e-04 
+26-01-12 16:40:14.047 - INFO: <epoch:108, iter: 367,600> l_pix: 1.5915e-03 
+26-01-12 16:40:37.032 - INFO: <epoch:108, iter: 367,700> l_pix: 1.1013e-03 
+26-01-12 16:40:59.492 - INFO: <epoch:108, iter: 367,800> l_pix: 1.4294e-03 
+26-01-12 16:41:21.971 - INFO: <epoch:108, iter: 367,900> l_pix: 1.3357e-03 
+26-01-12 16:41:46.789 - INFO: <epoch:108, iter: 368,000> l_pix: 2.5095e-03 
+26-01-12 16:42:20.434 - INFO: <epoch:108, iter: 368,100> l_pix: 1.5260e-03 
+26-01-12 16:42:43.918 - INFO: <epoch:108, iter: 368,200> l_pix: 1.1425e-03 
+26-01-12 16:43:07.413 - INFO: <epoch:108, iter: 368,300> l_pix: 1.4561e-03 
+26-01-12 16:43:30.033 - INFO: <epoch:108, iter: 368,400> l_pix: 2.2053e-03 
+26-01-12 16:43:52.564 - INFO: <epoch:108, iter: 368,500> l_pix: 1.4769e-03 
+26-01-12 16:44:15.153 - INFO: <epoch:108, iter: 368,600> l_pix: 1.5375e-03 
+26-01-12 16:44:37.794 - INFO: <epoch:108, iter: 368,700> l_pix: 1.9544e-03 
+26-01-12 16:45:00.912 - INFO: <epoch:108, iter: 368,800> l_pix: 1.7459e-03 
+26-01-12 16:45:21.799 - INFO: <epoch:108, iter: 368,900> l_pix: 1.2532e-03 
+26-01-12 16:45:44.859 - INFO: <epoch:108, iter: 369,000> l_pix: 1.2043e-03 
+26-01-12 16:46:20.071 - INFO: <epoch:109, iter: 369,100> l_pix: 1.7907e-03 
+26-01-12 16:46:42.259 - INFO: <epoch:109, iter: 369,200> l_pix: 1.6164e-03 
+26-01-12 16:47:04.280 - INFO: <epoch:109, iter: 369,300> l_pix: 1.7215e-03 
+26-01-12 16:47:26.111 - INFO: <epoch:109, iter: 369,400> l_pix: 1.2218e-03 
+26-01-12 16:47:49.453 - INFO: <epoch:109, iter: 369,500> l_pix: 1.7392e-03 
+26-01-12 16:48:10.754 - INFO: <epoch:109, iter: 369,600> l_pix: 1.8163e-03 
+26-01-12 16:48:32.477 - INFO: <epoch:109, iter: 369,700> l_pix: 1.3952e-03 
+26-01-12 16:48:53.958 - INFO: <epoch:109, iter: 369,800> l_pix: 1.0061e-03 
+26-01-12 16:49:17.782 - INFO: <epoch:109, iter: 369,900> l_pix: 1.6018e-03 
+26-01-12 16:49:41.627 - INFO: <epoch:109, iter: 370,000> l_pix: 1.2818e-03 
+26-01-12 16:49:52.451 - INFO: Saving models and training states.
+26-01-12 16:50:00.128 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 16:50:20.447 - INFO: <epoch:109, iter: 370,100> l_pix: 1.4644e-03 
+26-01-12 16:50:42.791 - INFO: <epoch:109, iter: 370,200> l_pix: 1.4519e-03 
+26-01-12 16:51:05.015 - INFO: <epoch:109, iter: 370,300> l_pix: 1.2849e-03 
+26-01-12 16:51:27.230 - INFO: <epoch:109, iter: 370,400> l_pix: 1.3931e-03 
+26-01-12 16:51:48.896 - INFO: <epoch:109, iter: 370,500> l_pix: 1.4236e-03 
+26-01-12 16:52:11.319 - INFO: <epoch:109, iter: 370,600> l_pix: 1.7263e-03 
+26-01-12 16:52:35.808 - INFO: <epoch:109, iter: 370,700> l_pix: 1.2876e-03 
+26-01-12 16:52:58.222 - INFO: <epoch:109, iter: 370,800> l_pix: 1.1718e-03 
+26-01-12 16:53:20.582 - INFO: <epoch:109, iter: 370,900> l_pix: 1.6357e-03 
+26-01-12 16:53:43.239 - INFO: <epoch:109, iter: 371,000> l_pix: 1.4888e-03 
+26-01-12 16:54:19.168 - INFO: <epoch:109, iter: 371,100> l_pix: 1.7796e-03 
+26-01-12 16:54:41.626 - INFO: <epoch:109, iter: 371,200> l_pix: 1.9205e-03 
+26-01-12 16:55:04.856 - INFO: <epoch:109, iter: 371,300> l_pix: 1.5328e-03 
+26-01-12 16:55:27.226 - INFO: <epoch:109, iter: 371,400> l_pix: 1.9163e-03 
+26-01-12 16:55:52.031 - INFO: <epoch:109, iter: 371,500> l_pix: 1.1848e-03 
+26-01-12 16:56:14.590 - INFO: <epoch:109, iter: 371,600> l_pix: 2.5210e-03 
+26-01-12 16:56:37.475 - INFO: <epoch:109, iter: 371,700> l_pix: 1.6001e-03 
+26-01-12 16:57:00.098 - INFO: <epoch:109, iter: 371,800> l_pix: 9.7495e-04 
+26-01-12 16:57:22.452 - INFO: <epoch:109, iter: 371,900> l_pix: 1.5500e-03 
+26-01-12 16:57:45.213 - INFO: <epoch:109, iter: 372,000> l_pix: 1.5005e-03 
+26-01-12 16:58:21.093 - INFO: <epoch:109, iter: 372,100> l_pix: 1.4707e-03 
+26-01-12 16:58:44.233 - INFO: <epoch:109, iter: 372,200> l_pix: 1.9274e-03 
+26-01-12 16:59:08.321 - INFO: <epoch:109, iter: 372,300> l_pix: 1.5006e-03 
+26-01-12 16:59:30.959 - INFO: <epoch:109, iter: 372,400> l_pix: 2.3204e-03 
+26-01-12 16:59:53.527 - INFO: <epoch:110, iter: 372,500> l_pix: 1.1786e-03 
+26-01-12 17:00:15.348 - INFO: <epoch:110, iter: 372,600> l_pix: 1.7758e-03 
+26-01-12 17:00:36.886 - INFO: <epoch:110, iter: 372,700> l_pix: 1.0989e-03 
+26-01-12 17:01:00.090 - INFO: <epoch:110, iter: 372,800> l_pix: 2.3456e-03 
+26-01-12 17:01:21.908 - INFO: <epoch:110, iter: 372,900> l_pix: 1.8690e-03 
+26-01-12 17:01:43.796 - INFO: <epoch:110, iter: 373,000> l_pix: 1.3495e-03 
+26-01-12 17:02:18.567 - INFO: <epoch:110, iter: 373,100> l_pix: 1.3622e-03 
+26-01-12 17:02:40.755 - INFO: <epoch:110, iter: 373,200> l_pix: 9.9671e-04 
+26-01-12 17:03:02.145 - INFO: <epoch:110, iter: 373,300> l_pix: 1.4976e-03 
+26-01-12 17:03:23.595 - INFO: <epoch:110, iter: 373,400> l_pix: 1.9736e-03 
+26-01-12 17:03:48.070 - INFO: <epoch:110, iter: 373,500> l_pix: 1.4576e-03 
+26-01-12 17:04:11.105 - INFO: <epoch:110, iter: 373,600> l_pix: 9.6693e-04 
+26-01-12 17:04:33.311 - INFO: <epoch:110, iter: 373,700> l_pix: 1.5303e-03 
+26-01-12 17:04:55.689 - INFO: <epoch:110, iter: 373,800> l_pix: 1.2055e-03 
+26-01-12 17:05:18.456 - INFO: <epoch:110, iter: 373,900> l_pix: 2.8074e-03 
+26-01-12 17:05:42.678 - INFO: <epoch:110, iter: 374,000> l_pix: 1.5095e-03 
+26-01-12 17:06:16.624 - INFO: <epoch:110, iter: 374,100> l_pix: 1.7051e-03 
+26-01-12 17:06:41.462 - INFO: <epoch:110, iter: 374,200> l_pix: 2.1574e-03 
+26-01-12 17:07:04.139 - INFO: <epoch:110, iter: 374,300> l_pix: 1.7997e-03 
+26-01-12 17:07:26.532 - INFO: <epoch:110, iter: 374,400> l_pix: 1.4755e-03 
+26-01-12 17:07:48.522 - INFO: <epoch:110, iter: 374,500> l_pix: 2.6197e-03 
+26-01-12 17:08:09.967 - INFO: <epoch:110, iter: 374,600> l_pix: 1.1396e-03 
+26-01-12 17:08:34.022 - INFO: <epoch:110, iter: 374,700> l_pix: 1.3343e-03 
+26-01-12 17:08:57.012 - INFO: <epoch:110, iter: 374,800> l_pix: 1.0293e-03 
+26-01-12 17:09:19.617 - INFO: <epoch:110, iter: 374,900> l_pix: 1.5725e-03 
+26-01-12 17:09:42.390 - INFO: <epoch:110, iter: 375,000> l_pix: 1.0347e-03 
+26-01-12 17:10:17.919 - INFO: <epoch:110, iter: 375,100> l_pix: 1.2626e-03 
+26-01-12 17:10:40.868 - INFO: <epoch:110, iter: 375,200> l_pix: 1.5544e-03 
+26-01-12 17:11:03.169 - INFO: <epoch:110, iter: 375,300> l_pix: 1.4528e-03 
+26-01-12 17:11:26.087 - INFO: <epoch:110, iter: 375,400> l_pix: 1.7145e-03 
+26-01-12 17:11:50.794 - INFO: <epoch:110, iter: 375,500> l_pix: 1.1229e-03 
+26-01-12 17:12:13.327 - INFO: <epoch:110, iter: 375,600> l_pix: 1.5254e-03 
+26-01-12 17:12:35.459 - INFO: <epoch:110, iter: 375,700> l_pix: 1.9128e-03 
+26-01-12 17:12:57.350 - INFO: <epoch:110, iter: 375,800> l_pix: 1.6567e-03 
+26-01-12 17:13:21.800 - INFO: <epoch:110, iter: 375,900> l_pix: 9.6293e-04 
+26-01-12 17:13:44.754 - INFO: <epoch:111, iter: 376,000> l_pix: 1.2854e-03 
+26-01-12 17:14:20.937 - INFO: <epoch:111, iter: 376,100> l_pix: 8.7395e-04 
+26-01-12 17:14:43.489 - INFO: <epoch:111, iter: 376,200> l_pix: 1.2215e-03 
+26-01-12 17:15:08.418 - INFO: <epoch:111, iter: 376,300> l_pix: 1.3135e-03 
+26-01-12 17:15:30.766 - INFO: <epoch:111, iter: 376,400> l_pix: 1.3172e-03 
+26-01-12 17:15:53.763 - INFO: <epoch:111, iter: 376,500> l_pix: 1.1349e-03 
+26-01-12 17:16:16.907 - INFO: <epoch:111, iter: 376,600> l_pix: 1.4757e-03 
+26-01-12 17:16:38.163 - INFO: <epoch:111, iter: 376,700> l_pix: 1.0115e-03 
+26-01-12 17:17:01.034 - INFO: <epoch:111, iter: 376,800> l_pix: 1.0304e-03 
+26-01-12 17:17:24.833 - INFO: <epoch:111, iter: 376,900> l_pix: 1.0709e-03 
+26-01-12 17:17:46.189 - INFO: <epoch:111, iter: 377,000> l_pix: 9.8378e-04 
+26-01-12 17:18:21.869 - INFO: <epoch:111, iter: 377,100> l_pix: 9.6057e-04 
+26-01-12 17:18:44.777 - INFO: <epoch:111, iter: 377,200> l_pix: 1.6537e-03 
+26-01-12 17:19:07.251 - INFO: <epoch:111, iter: 377,300> l_pix: 1.7961e-03 
+26-01-12 17:19:29.341 - INFO: <epoch:111, iter: 377,400> l_pix: 1.0942e-03 
+26-01-12 17:19:52.648 - INFO: <epoch:111, iter: 377,500> l_pix: 1.2290e-03 
+26-01-12 17:20:17.031 - INFO: <epoch:111, iter: 377,600> l_pix: 1.8642e-03 
+26-01-12 17:20:39.220 - INFO: <epoch:111, iter: 377,700> l_pix: 9.8381e-04 
+26-01-12 17:21:01.804 - INFO: <epoch:111, iter: 377,800> l_pix: 1.5100e-03 
+26-01-12 17:21:24.102 - INFO: <epoch:111, iter: 377,900> l_pix: 1.2386e-03 
+26-01-12 17:21:46.488 - INFO: <epoch:111, iter: 378,000> l_pix: 1.8973e-03 
+26-01-12 17:22:22.159 - INFO: <epoch:111, iter: 378,100> l_pix: 1.7988e-03 
+26-01-12 17:22:44.839 - INFO: <epoch:111, iter: 378,200> l_pix: 1.1981e-03 
+26-01-12 17:23:07.501 - INFO: <epoch:111, iter: 378,300> l_pix: 1.9424e-03 
+26-01-12 17:23:31.329 - INFO: <epoch:111, iter: 378,400> l_pix: 1.2699e-03 
+26-01-12 17:23:53.934 - INFO: <epoch:111, iter: 378,500> l_pix: 1.1904e-03 
+26-01-12 17:24:15.375 - INFO: <epoch:111, iter: 378,600> l_pix: 1.3244e-03 
+26-01-12 17:24:37.161 - INFO: <epoch:111, iter: 378,700> l_pix: 1.3996e-03 
+26-01-12 17:25:00.164 - INFO: <epoch:111, iter: 378,800> l_pix: 1.3024e-03 
+26-01-12 17:25:24.445 - INFO: <epoch:111, iter: 378,900> l_pix: 1.5720e-03 
+26-01-12 17:25:46.767 - INFO: <epoch:111, iter: 379,000> l_pix: 1.4450e-03 
+26-01-12 17:26:23.246 - INFO: <epoch:111, iter: 379,100> l_pix: 1.6391e-03 
+26-01-12 17:26:45.464 - INFO: <epoch:111, iter: 379,200> l_pix: 1.2360e-03 
+26-01-12 17:27:07.998 - INFO: <epoch:111, iter: 379,300> l_pix: 1.3329e-03 
+26-01-12 17:27:30.769 - INFO: <epoch:112, iter: 379,400> l_pix: 1.6834e-03 
+26-01-12 17:27:53.184 - INFO: <epoch:112, iter: 379,500> l_pix: 1.7398e-03 
+26-01-12 17:28:17.427 - INFO: <epoch:112, iter: 379,600> l_pix: 1.3498e-03 
+26-01-12 17:28:39.701 - INFO: <epoch:112, iter: 379,700> l_pix: 1.4065e-03 
+26-01-12 17:29:02.357 - INFO: <epoch:112, iter: 379,800> l_pix: 8.9396e-04 
+26-01-12 17:29:24.479 - INFO: <epoch:112, iter: 379,900> l_pix: 1.8265e-03 
+26-01-12 17:29:46.852 - INFO: <epoch:112, iter: 380,000> l_pix: 1.1339e-03 
+26-01-12 17:30:00.455 - INFO: Saving models and training states.
+26-01-12 17:30:07.124 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 17:30:28.746 - INFO: <epoch:112, iter: 380,100> l_pix: 1.7046e-03 
+26-01-12 17:30:50.399 - INFO: <epoch:112, iter: 380,200> l_pix: 1.5800e-03 
+26-01-12 17:31:12.488 - INFO: <epoch:112, iter: 380,300> l_pix: 1.1402e-03 
+26-01-12 17:31:34.909 - INFO: <epoch:112, iter: 380,400> l_pix: 9.5235e-04 
+26-01-12 17:31:58.266 - INFO: <epoch:112, iter: 380,500> l_pix: 1.2510e-03 
+26-01-12 17:32:19.916 - INFO: <epoch:112, iter: 380,600> l_pix: 1.6175e-03 
+26-01-12 17:32:41.297 - INFO: <epoch:112, iter: 380,700> l_pix: 1.8152e-03 
+26-01-12 17:33:02.817 - INFO: <epoch:112, iter: 380,800> l_pix: 1.1146e-03 
+26-01-12 17:33:26.246 - INFO: <epoch:112, iter: 380,900> l_pix: 1.9379e-03 
+26-01-12 17:33:47.969 - INFO: <epoch:112, iter: 381,000> l_pix: 1.3981e-03 
+26-01-12 17:34:22.793 - INFO: <epoch:112, iter: 381,100> l_pix: 1.5214e-03 
+26-01-12 17:34:44.099 - INFO: <epoch:112, iter: 381,200> l_pix: 1.3947e-03 
+26-01-12 17:35:05.807 - INFO: <epoch:112, iter: 381,300> l_pix: 1.4612e-03 
+26-01-12 17:35:27.877 - INFO: <epoch:112, iter: 381,400> l_pix: 1.2292e-03 
+26-01-12 17:35:49.340 - INFO: <epoch:112, iter: 381,500> l_pix: 1.6013e-03 
+26-01-12 17:36:12.917 - INFO: <epoch:112, iter: 381,600> l_pix: 1.4725e-03 
+26-01-12 17:36:34.839 - INFO: <epoch:112, iter: 381,700> l_pix: 1.3144e-03 
+26-01-12 17:36:56.490 - INFO: <epoch:112, iter: 381,800> l_pix: 1.7131e-03 
+26-01-12 17:37:18.377 - INFO: <epoch:112, iter: 381,900> l_pix: 3.0331e-03 
+26-01-12 17:37:41.705 - INFO: <epoch:112, iter: 382,000> l_pix: 1.6412e-03 
+26-01-12 17:38:14.811 - INFO: <epoch:112, iter: 382,100> l_pix: 1.4631e-03 
+26-01-12 17:38:38.292 - INFO: <epoch:112, iter: 382,200> l_pix: 1.7293e-03 
+26-01-12 17:38:59.853 - INFO: <epoch:112, iter: 382,300> l_pix: 1.0813e-03 
+26-01-12 17:39:21.449 - INFO: <epoch:112, iter: 382,400> l_pix: 1.2058e-03 
+26-01-12 17:39:43.355 - INFO: <epoch:112, iter: 382,500> l_pix: 1.2277e-03 
+26-01-12 17:40:05.272 - INFO: <epoch:112, iter: 382,600> l_pix: 1.7272e-03 
+26-01-12 17:40:28.674 - INFO: <epoch:112, iter: 382,700> l_pix: 1.9346e-03 
+26-01-12 17:40:50.777 - INFO: <epoch:112, iter: 382,800> l_pix: 1.5139e-03 
+26-01-12 17:41:14.605 - INFO: <epoch:113, iter: 382,900> l_pix: 1.5207e-03 
+26-01-12 17:41:37.216 - INFO: <epoch:113, iter: 383,000> l_pix: 1.3071e-03 
+26-01-12 17:42:13.349 - INFO: <epoch:113, iter: 383,100> l_pix: 9.9631e-04 
+26-01-12 17:42:35.824 - INFO: <epoch:113, iter: 383,200> l_pix: 1.5993e-03 
+26-01-12 17:42:57.983 - INFO: <epoch:113, iter: 383,300> l_pix: 1.2069e-03 
+26-01-12 17:43:20.555 - INFO: <epoch:113, iter: 383,400> l_pix: 2.2764e-03 
+26-01-12 17:43:44.524 - INFO: <epoch:113, iter: 383,500> l_pix: 1.2893e-03 
+26-01-12 17:44:06.858 - INFO: <epoch:113, iter: 383,600> l_pix: 1.5346e-03 
+26-01-12 17:44:29.438 - INFO: <epoch:113, iter: 383,700> l_pix: 2.3549e-03 
+26-01-12 17:44:51.691 - INFO: <epoch:113, iter: 383,800> l_pix: 1.0044e-03 
+26-01-12 17:45:14.142 - INFO: <epoch:113, iter: 383,900> l_pix: 1.9165e-03 
+26-01-12 17:45:38.770 - INFO: <epoch:113, iter: 384,000> l_pix: 2.0259e-03 
+26-01-12 17:46:13.085 - INFO: <epoch:113, iter: 384,100> l_pix: 1.5597e-03 
+26-01-12 17:46:36.858 - INFO: <epoch:113, iter: 384,200> l_pix: 1.4987e-03 
+26-01-12 17:46:59.377 - INFO: <epoch:113, iter: 384,300> l_pix: 1.0813e-03 
+26-01-12 17:47:21.765 - INFO: <epoch:113, iter: 384,400> l_pix: 1.5116e-03 
+26-01-12 17:47:44.238 - INFO: <epoch:113, iter: 384,500> l_pix: 1.6762e-03 
+26-01-12 17:48:06.781 - INFO: <epoch:113, iter: 384,600> l_pix: 1.0394e-03 
+26-01-12 17:48:29.399 - INFO: <epoch:113, iter: 384,700> l_pix: 1.8344e-03 
+26-01-12 17:48:54.421 - INFO: <epoch:113, iter: 384,800> l_pix: 1.9852e-03 
+26-01-12 17:49:16.774 - INFO: <epoch:113, iter: 384,900> l_pix: 7.6493e-04 
+26-01-12 17:49:39.889 - INFO: <epoch:113, iter: 385,000> l_pix: 1.6329e-03 
+26-01-12 17:50:15.532 - INFO: <epoch:113, iter: 385,100> l_pix: 1.6272e-03 
+26-01-12 17:50:38.048 - INFO: <epoch:113, iter: 385,200> l_pix: 2.0527e-03 
+26-01-12 17:51:00.874 - INFO: <epoch:113, iter: 385,300> l_pix: 1.1927e-03 
+26-01-12 17:51:22.746 - INFO: <epoch:113, iter: 385,400> l_pix: 1.9851e-03 
+26-01-12 17:51:46.930 - INFO: <epoch:113, iter: 385,500> l_pix: 1.3308e-03 
+26-01-12 17:52:09.802 - INFO: <epoch:113, iter: 385,600> l_pix: 1.4221e-03 
+26-01-12 17:52:31.979 - INFO: <epoch:113, iter: 385,700> l_pix: 1.0494e-03 
+26-01-12 17:52:54.717 - INFO: <epoch:113, iter: 385,800> l_pix: 1.8633e-03 
+26-01-12 17:53:17.033 - INFO: <epoch:113, iter: 385,900> l_pix: 1.3237e-03 
+26-01-12 17:53:39.871 - INFO: <epoch:113, iter: 386,000> l_pix: 1.4683e-03 
+26-01-12 17:54:15.840 - INFO: <epoch:113, iter: 386,100> l_pix: 1.2442e-03 
+26-01-12 17:54:38.922 - INFO: <epoch:113, iter: 386,200> l_pix: 1.2579e-03 
+26-01-12 17:55:03.839 - INFO: <epoch:114, iter: 386,300> l_pix: 1.7426e-03 
+26-01-12 17:55:26.339 - INFO: <epoch:114, iter: 386,400> l_pix: 1.5813e-03 
+26-01-12 17:55:49.259 - INFO: <epoch:114, iter: 386,500> l_pix: 2.3914e-03 
+26-01-12 17:56:11.131 - INFO: <epoch:114, iter: 386,600> l_pix: 8.0432e-04 
+26-01-12 17:56:32.385 - INFO: <epoch:114, iter: 386,700> l_pix: 1.2839e-03 
+26-01-12 17:56:55.482 - INFO: <epoch:114, iter: 386,800> l_pix: 1.6950e-03 
+26-01-12 17:57:17.703 - INFO: <epoch:114, iter: 386,900> l_pix: 1.3016e-03 
+26-01-12 17:57:39.590 - INFO: <epoch:114, iter: 387,000> l_pix: 1.9356e-03 
+26-01-12 17:58:14.214 - INFO: <epoch:114, iter: 387,100> l_pix: 1.1425e-03 
+26-01-12 17:58:36.258 - INFO: <epoch:114, iter: 387,200> l_pix: 1.4366e-03 
+26-01-12 17:58:58.707 - INFO: <epoch:114, iter: 387,300> l_pix: 1.8447e-03 
+26-01-12 17:59:20.262 - INFO: <epoch:114, iter: 387,400> l_pix: 1.6414e-03 
+26-01-12 17:59:43.040 - INFO: <epoch:114, iter: 387,500> l_pix: 1.3225e-03 
+26-01-12 18:00:04.422 - INFO: <epoch:114, iter: 387,600> l_pix: 1.3156e-03 
+26-01-12 18:00:25.974 - INFO: <epoch:114, iter: 387,700> l_pix: 2.0944e-03 
+26-01-12 18:00:47.730 - INFO: <epoch:114, iter: 387,800> l_pix: 1.6601e-03 
+26-01-12 18:01:11.122 - INFO: <epoch:114, iter: 387,900> l_pix: 1.5918e-03 
+26-01-12 18:01:33.074 - INFO: <epoch:114, iter: 388,000> l_pix: 1.3094e-03 
+26-01-12 18:02:08.058 - INFO: <epoch:114, iter: 388,100> l_pix: 1.3796e-03 
+26-01-12 18:02:29.604 - INFO: <epoch:114, iter: 388,200> l_pix: 1.2575e-03 
+26-01-12 18:02:49.572 - INFO: <epoch:114, iter: 388,300> l_pix: 1.6085e-03 
+26-01-12 18:03:11.689 - INFO: <epoch:114, iter: 388,400> l_pix: 1.8889e-03 
+26-01-12 18:03:32.944 - INFO: <epoch:114, iter: 388,500> l_pix: 1.3250e-03 
+26-01-12 18:03:59.403 - INFO: <epoch:114, iter: 388,600> l_pix: 1.6761e-03 
+26-01-12 18:04:21.749 - INFO: <epoch:114, iter: 388,700> l_pix: 1.7375e-03 
+26-01-12 18:04:43.640 - INFO: <epoch:114, iter: 388,800> l_pix: 1.3962e-03 
+26-01-12 18:05:06.455 - INFO: <epoch:114, iter: 388,900> l_pix: 1.9110e-03 
+26-01-12 18:05:29.597 - INFO: <epoch:114, iter: 389,000> l_pix: 1.5991e-03 
+26-01-12 18:06:06.210 - INFO: <epoch:114, iter: 389,100> l_pix: 1.4134e-03 
+26-01-12 18:06:27.221 - INFO: <epoch:114, iter: 389,200> l_pix: 1.6729e-03 
+26-01-12 18:06:51.686 - INFO: <epoch:114, iter: 389,300> l_pix: 1.5216e-03 
+26-01-12 18:07:15.105 - INFO: <epoch:114, iter: 389,400> l_pix: 1.8434e-03 
+26-01-12 18:07:38.084 - INFO: <epoch:114, iter: 389,500> l_pix: 1.4236e-03 
+26-01-12 18:08:02.633 - INFO: <epoch:114, iter: 389,600> l_pix: 1.8562e-03 
+26-01-12 18:08:26.858 - INFO: <epoch:114, iter: 389,700> l_pix: 1.1947e-03 
+26-01-12 18:08:52.581 - INFO: <epoch:115, iter: 389,800> l_pix: 9.6174e-04 
+26-01-12 18:09:17.405 - INFO: <epoch:115, iter: 389,900> l_pix: 1.6531e-03 
+26-01-12 18:09:42.188 - INFO: <epoch:115, iter: 390,000> l_pix: 1.9689e-03 
+26-01-12 18:09:57.259 - INFO: Saving models and training states.
+26-01-12 18:10:02.699 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 18:10:23.808 - INFO: <epoch:115, iter: 390,100> l_pix: 1.0780e-03 
+26-01-12 18:10:44.506 - INFO: <epoch:115, iter: 390,200> l_pix: 1.3734e-03 
+26-01-12 18:11:05.494 - INFO: <epoch:115, iter: 390,300> l_pix: 1.1873e-03 
+26-01-12 18:11:28.526 - INFO: <epoch:115, iter: 390,400> l_pix: 1.7234e-03 
+26-01-12 18:11:50.298 - INFO: <epoch:115, iter: 390,500> l_pix: 1.6179e-03 
+26-01-12 18:12:11.593 - INFO: <epoch:115, iter: 390,600> l_pix: 1.3209e-03 
+26-01-12 18:12:32.638 - INFO: <epoch:115, iter: 390,700> l_pix: 1.4040e-03 
+26-01-12 18:12:55.991 - INFO: <epoch:115, iter: 390,800> l_pix: 1.1565e-03 
+26-01-12 18:13:17.930 - INFO: <epoch:115, iter: 390,900> l_pix: 1.3697e-03 
+26-01-12 18:13:39.417 - INFO: <epoch:115, iter: 391,000> l_pix: 1.5938e-03 
+26-01-12 18:14:13.711 - INFO: <epoch:115, iter: 391,100> l_pix: 1.8872e-03 
+26-01-12 18:14:34.715 - INFO: <epoch:115, iter: 391,200> l_pix: 1.5197e-03 
+26-01-12 18:14:55.426 - INFO: <epoch:115, iter: 391,300> l_pix: 1.5572e-03 
+26-01-12 18:15:17.232 - INFO: <epoch:115, iter: 391,400> l_pix: 1.3514e-03 
+26-01-12 18:15:40.667 - INFO: <epoch:115, iter: 391,500> l_pix: 1.2758e-03 
+26-01-12 18:16:02.098 - INFO: <epoch:115, iter: 391,600> l_pix: 1.4480e-03 
+26-01-12 18:16:23.455 - INFO: <epoch:115, iter: 391,700> l_pix: 1.3319e-03 
+26-01-12 18:16:44.909 - INFO: <epoch:115, iter: 391,800> l_pix: 1.6205e-03 
+26-01-12 18:17:08.571 - INFO: <epoch:115, iter: 391,900> l_pix: 1.6133e-03 
+26-01-12 18:17:29.882 - INFO: <epoch:115, iter: 392,000> l_pix: 1.0439e-03 
+26-01-12 18:18:03.748 - INFO: <epoch:115, iter: 392,100> l_pix: 1.1640e-03 
+26-01-12 18:18:25.396 - INFO: <epoch:115, iter: 392,200> l_pix: 1.7891e-03 
+26-01-12 18:18:47.139 - INFO: <epoch:115, iter: 392,300> l_pix: 2.0375e-03 
+26-01-12 18:19:08.285 - INFO: <epoch:115, iter: 392,400> l_pix: 2.4687e-03 
+26-01-12 18:19:31.305 - INFO: <epoch:115, iter: 392,500> l_pix: 1.7183e-03 
+26-01-12 18:19:51.950 - INFO: <epoch:115, iter: 392,600> l_pix: 1.2682e-03 
+26-01-12 18:20:12.650 - INFO: <epoch:115, iter: 392,700> l_pix: 1.6267e-03 
+26-01-12 18:20:33.666 - INFO: <epoch:115, iter: 392,800> l_pix: 1.1385e-03 
+26-01-12 18:20:56.524 - INFO: <epoch:115, iter: 392,900> l_pix: 1.9248e-03 
+26-01-12 18:21:17.585 - INFO: <epoch:115, iter: 393,000> l_pix: 1.7129e-03 
+26-01-12 18:21:51.578 - INFO: <epoch:115, iter: 393,100> l_pix: 1.1113e-03 
+26-01-12 18:22:13.439 - INFO: <epoch:116, iter: 393,200> l_pix: 1.0746e-03 
+26-01-12 18:22:34.761 - INFO: <epoch:116, iter: 393,300> l_pix: 1.6395e-03 
+26-01-12 18:22:55.616 - INFO: <epoch:116, iter: 393,400> l_pix: 1.5127e-03 
+26-01-12 18:23:16.479 - INFO: <epoch:116, iter: 393,500> l_pix: 1.6587e-03 
+26-01-12 18:23:38.787 - INFO: <epoch:116, iter: 393,600> l_pix: 1.2669e-03 
+26-01-12 18:23:59.577 - INFO: <epoch:116, iter: 393,700> l_pix: 1.6474e-03 
+26-01-12 18:24:20.484 - INFO: <epoch:116, iter: 393,800> l_pix: 1.0414e-03 
+26-01-12 18:24:41.507 - INFO: <epoch:116, iter: 393,900> l_pix: 1.5704e-03 
+26-01-12 18:25:05.250 - INFO: <epoch:116, iter: 394,000> l_pix: 1.3251e-03 
+26-01-12 18:25:38.657 - INFO: <epoch:116, iter: 394,100> l_pix: 1.0400e-03 
+26-01-12 18:26:02.424 - INFO: <epoch:116, iter: 394,200> l_pix: 1.0552e-03 
+26-01-12 18:26:23.545 - INFO: <epoch:116, iter: 394,300> l_pix: 1.9206e-03 
+26-01-12 18:26:45.915 - INFO: <epoch:116, iter: 394,400> l_pix: 1.3761e-03 
+26-01-12 18:27:08.236 - INFO: <epoch:116, iter: 394,500> l_pix: 1.8236e-03 
+26-01-12 18:27:31.529 - INFO: <epoch:116, iter: 394,600> l_pix: 1.2116e-03 
+26-01-12 18:27:53.525 - INFO: <epoch:116, iter: 394,700> l_pix: 1.3307e-03 
+26-01-12 18:28:15.290 - INFO: <epoch:116, iter: 394,800> l_pix: 1.9541e-03 
+26-01-12 18:28:37.576 - INFO: <epoch:116, iter: 394,900> l_pix: 1.5718e-03 
+26-01-12 18:28:58.809 - INFO: <epoch:116, iter: 395,000> l_pix: 1.4876e-03 
+26-01-12 18:29:33.732 - INFO: <epoch:116, iter: 395,100> l_pix: 1.1454e-03 
+26-01-12 18:29:55.266 - INFO: <epoch:116, iter: 395,200> l_pix: 1.2270e-03 
+26-01-12 18:30:19.269 - INFO: <epoch:116, iter: 395,300> l_pix: 9.2785e-04 
+26-01-12 18:30:40.621 - INFO: <epoch:116, iter: 395,400> l_pix: 1.4285e-03 
+26-01-12 18:31:02.462 - INFO: <epoch:116, iter: 395,500> l_pix: 8.7480e-04 
+26-01-12 18:31:24.321 - INFO: <epoch:116, iter: 395,600> l_pix: 1.6734e-03 
+26-01-12 18:31:45.913 - INFO: <epoch:116, iter: 395,700> l_pix: 1.8854e-03 
+26-01-12 18:32:09.240 - INFO: <epoch:116, iter: 395,800> l_pix: 1.7612e-03 
+26-01-12 18:32:31.160 - INFO: <epoch:116, iter: 395,900> l_pix: 1.3934e-03 
+26-01-12 18:32:53.193 - INFO: <epoch:116, iter: 396,000> l_pix: 1.4281e-03 
+26-01-12 18:33:27.624 - INFO: <epoch:116, iter: 396,100> l_pix: 1.0240e-03 
+26-01-12 18:33:50.269 - INFO: <epoch:116, iter: 396,200> l_pix: 1.5401e-03 
+26-01-12 18:34:11.794 - INFO: <epoch:116, iter: 396,300> l_pix: 8.6195e-04 
+26-01-12 18:34:34.980 - INFO: <epoch:116, iter: 396,400> l_pix: 9.7927e-04 
+26-01-12 18:34:56.984 - INFO: <epoch:116, iter: 396,500> l_pix: 2.2438e-03 
+26-01-12 18:35:19.150 - INFO: <epoch:116, iter: 396,600> l_pix: 1.5465e-03 
+26-01-12 18:35:41.263 - INFO: <epoch:117, iter: 396,700> l_pix: 1.0760e-03 
+26-01-12 18:36:02.921 - INFO: <epoch:117, iter: 396,800> l_pix: 1.9740e-03 
+26-01-12 18:36:26.496 - INFO: <epoch:117, iter: 396,900> l_pix: 9.3799e-04 
+26-01-12 18:36:48.010 - INFO: <epoch:117, iter: 397,000> l_pix: 1.7757e-03 
+26-01-12 18:37:21.573 - INFO: <epoch:117, iter: 397,100> l_pix: 1.5649e-03 
+26-01-12 18:37:42.602 - INFO: <epoch:117, iter: 397,200> l_pix: 1.2224e-03 
+26-01-12 18:38:04.221 - INFO: <epoch:117, iter: 397,300> l_pix: 1.9540e-03 
+26-01-12 18:38:25.336 - INFO: <epoch:117, iter: 397,400> l_pix: 1.0897e-03 
+26-01-12 18:38:48.862 - INFO: <epoch:117, iter: 397,500> l_pix: 1.4619e-03 
+26-01-12 18:39:10.936 - INFO: <epoch:117, iter: 397,600> l_pix: 1.3170e-03 
+26-01-12 18:39:32.455 - INFO: <epoch:117, iter: 397,700> l_pix: 1.5312e-03 
+26-01-12 18:39:53.734 - INFO: <epoch:117, iter: 397,800> l_pix: 1.6682e-03 
+26-01-12 18:40:15.674 - INFO: <epoch:117, iter: 397,900> l_pix: 1.2580e-03 
+26-01-12 18:40:38.514 - INFO: <epoch:117, iter: 398,000> l_pix: 9.3011e-04 
+26-01-12 18:41:11.238 - INFO: <epoch:117, iter: 398,100> l_pix: 1.4002e-03 
+26-01-12 18:41:34.548 - INFO: <epoch:117, iter: 398,200> l_pix: 1.1888e-03 
+26-01-12 18:41:55.484 - INFO: <epoch:117, iter: 398,300> l_pix: 1.1934e-03 
+26-01-12 18:42:16.490 - INFO: <epoch:117, iter: 398,400> l_pix: 1.8989e-03 
+26-01-12 18:42:37.641 - INFO: <epoch:117, iter: 398,500> l_pix: 9.6924e-04 
+26-01-12 18:43:00.296 - INFO: <epoch:117, iter: 398,600> l_pix: 9.2105e-04 
+26-01-12 18:43:21.284 - INFO: <epoch:117, iter: 398,700> l_pix: 2.2566e-03 
+26-01-12 18:43:41.869 - INFO: <epoch:117, iter: 398,800> l_pix: 2.3391e-03 
+26-01-12 18:44:02.458 - INFO: <epoch:117, iter: 398,900> l_pix: 1.0371e-03 
+26-01-12 18:44:25.248 - INFO: <epoch:117, iter: 399,000> l_pix: 1.2278e-03 
+26-01-12 18:44:56.844 - INFO: <epoch:117, iter: 399,100> l_pix: 1.5986e-03 
+26-01-12 18:45:19.207 - INFO: <epoch:117, iter: 399,200> l_pix: 1.6025e-03 
+26-01-12 18:45:39.783 - INFO: <epoch:117, iter: 399,300> l_pix: 1.9962e-03 
+26-01-12 18:46:00.380 - INFO: <epoch:117, iter: 399,400> l_pix: 1.4814e-03 
+26-01-12 18:46:21.111 - INFO: <epoch:117, iter: 399,500> l_pix: 1.8390e-03 
+26-01-12 18:46:43.643 - INFO: <epoch:117, iter: 399,600> l_pix: 1.2919e-03 
+26-01-12 18:47:04.313 - INFO: <epoch:117, iter: 399,700> l_pix: 1.1313e-03 
+26-01-12 18:47:25.161 - INFO: <epoch:117, iter: 399,800> l_pix: 1.7632e-03 
+26-01-12 18:47:46.214 - INFO: <epoch:117, iter: 399,900> l_pix: 9.9451e-04 
+26-01-12 18:48:08.443 - INFO: <epoch:117, iter: 400,000> l_pix: 1.8500e-03 
+26-01-12 18:48:19.502 - INFO: Saving models and training states.
+26-01-12 18:48:24.568 - INFO: Saved model in [experiments/ct_denoise_260112_121844/checkpoint/latest_gen.pth] ...
+26-01-12 18:48:24.899 - INFO: End of training.
