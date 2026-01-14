@@ -1,7 +1,0 @@
-26-01-14 04:59:56.287 - INFO: [Stage 2] Markov chain state matching (using teacher N2N)!
-26-01-14 05:00:00.548 - INFO: CT dataset [ct] is created. Size: 4150
-26-01-14 05:00:03.493 - INFO: CT dataset [ct] is created. Size: 800
-26-01-14 05:00:03.494 - INFO: Initial Dataset Finished
-26-01-14 05:00:03.495 - INFO: Using teacher N2N results from ct_dataset
-26-01-14 05:00:04.443 - INFO: Processing train set: 4150 samples
-26-01-14 05:05:31.146 - INFO: Processing val set: 800 samples

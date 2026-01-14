@@ -101,6 +101,9 @@ class CTDataset(Dataset):
         v_end = min(int(valid_mask[1]), len(self.n2n_pairs))
         self.n2n_pairs = self.n2n_pairs[v_start:v_end]
 
+        for i, pair in enumerate(self.n2n_pairs):
+            print(f"[{phase}] Volume {i}: patient_id={pair['patient_id']}, subid={pair['patient_subid']}")
+
         if slice_range is None:
             self.slice_start, self.slice_end = 0, S
         else:
@@ -164,8 +167,6 @@ class CTDataset(Dataset):
         print(f'[{phase}] Histogram equalization: {self.histogram_equalization}')
         if self.teacher_n2n_root:
             print(f'[{phase}] Using teacher N2N from: {self.teacher_n2n_root}')
-        if self.matched_state:
-            print(f'[{phase}] Loaded matched_state for {len(self.matched_state)} volumes')
 
     def _fix_path(self, path):
         if self.data_root is not None:
@@ -250,7 +251,7 @@ class CTDataset(Dataset):
         bad_patients = {8527}
         
         pairs = []
-        grouped = df.groupby(['Patient_ID', 'Patient_subID'])
+        grouped = df.groupby(['Patient_ID', 'Patient_subID'], sort=False)
         
         for (pid, psid), g in grouped:
             try:
@@ -323,12 +324,6 @@ class CTDataset(Dataset):
         return samples
 
     def _parse_stage2_file(self, file_path):
-        """
-        Parse stage2 file with support for both old and new formats.
-        
-        Old format: volume_idx_slice_idx_matched_t (e.g., 0_30_256)
-        New format: phase_volume_idx_slice_idx_matched_t (e.g., train_0_30_256 or val_0_30_256)
-        """
         if file_path is None or not os.path.exists(file_path):
             return None
         
@@ -336,18 +331,9 @@ class CTDataset(Dataset):
         with open(file_path, 'r') as f:
             for line in f:
                 info = line.strip().split('_')
-                if len(info) >= 4:
-                    # 新格式: train_0_30_256 或 val_0_30_256
-                    phase = info[0]
-                    v, s, t = int(info[1]), int(info[2]), int(info[3])
-                    # 只加载当前 phase 的数据
-                    if phase == self.phase:
-                        results.setdefault(v, {})[s] = t
-                elif len(info) >= 3:
-                    # 旧格式: 0_30_256 (兼容)
+                if len(info) >= 3:
                     v, s, t = int(info[0]), int(info[1]), int(info[2])
                     results.setdefault(v, {})[s] = t
-        
         return results
 
     def _preprocess_image(self, img):
@@ -474,7 +460,7 @@ class CTDataset(Dataset):
         if self.phase == 'train' and random.random() > 0.5:
             input_img, target_img = n1, n0
         else:
-            input_img, target_img = n0, n1
+            input_img, target_img = n1, n0
 
         if self.padding > 0:
             cond_ch = 2 * self.padding

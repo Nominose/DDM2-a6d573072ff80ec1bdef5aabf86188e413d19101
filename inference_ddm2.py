@@ -3,7 +3,7 @@ DDM2 Inference Script - Generate full volume prediction
 生成完整的 50 slice nii.gz 文件，并转换回原始 HU 空间
 
 Usage:
-    python inference_ddm2.py -c config/ct_denoise.json --patient_idx 8
+    python inference_ddm2.py -c config/ct_denoise.json --patient_idx 0
 """
 
 import argparse
