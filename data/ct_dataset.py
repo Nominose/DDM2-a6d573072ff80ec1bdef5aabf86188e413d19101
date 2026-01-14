@@ -247,8 +247,7 @@ class CTDataset(Dataset):
         return None
 
     def _build_n2n_pairs(self, df):
-        bad_patients = {8527, 10431, 10461, 10536, 11638, 11640, 19591, 30597,
-                        76624, 102364, 104563, 109021, 139437, 148611, 154227, 172147}
+        bad_patients = {8527}
         
         pairs = []
         grouped = df.groupby(['Patient_ID', 'Patient_subID'])
