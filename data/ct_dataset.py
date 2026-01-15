@@ -101,9 +101,6 @@ class CTDataset(Dataset):
         v_end = min(int(valid_mask[1]), len(self.n2n_pairs))
         self.n2n_pairs = self.n2n_pairs[v_start:v_end]
 
-        for i, pair in enumerate(self.n2n_pairs):
-            print(f"[{phase}] Volume {i}: patient_id={pair['patient_id']}, subid={pair['patient_subid']}")
-
         if slice_range is None:
             self.slice_start, self.slice_end = 0, S
         else:
@@ -248,7 +245,7 @@ class CTDataset(Dataset):
         return None
 
     def _build_n2n_pairs(self, df):
-        bad_patients = {8527}
+        bad_patients = {}
         
         pairs = []
         grouped = df.groupby(['Patient_ID', 'Patient_subID'], sort=False)
@@ -460,7 +457,7 @@ class CTDataset(Dataset):
         if self.phase == 'train' and random.random() > 0.5:
             input_img, target_img = n1, n0
         else:
-            input_img, target_img = n1, n0
+            input_img, target_img = n0, n1
 
         if self.padding > 0:
             cond_ch = 2 * self.padding

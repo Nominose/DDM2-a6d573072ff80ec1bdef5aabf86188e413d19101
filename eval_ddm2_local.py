@@ -2,6 +2,10 @@
 DDM2 Evaluation Script - Local Version
 本脚本用于在本地环境下评估 DDM2 模型的去噪效果。
 它会计算 MAE、SSIM 和 LPIPS 三个指标，评估 DDM2 的去噪结果与 Noisy 图像和 N2N 结果的差异。
+
+Usage:
+    # 评估单个患者
+    python eval_ddm2_local.py --patient_id 214931
 """
 
 import nibabel as nb
@@ -24,7 +28,7 @@ GT_ROOT = '/host/d/file/gt/diffusion denoising/unsupervised_gaussian_2D_current_
 GT_EPOCH = 61
 NOISY_ROOT = '/host/d/file/pre/noise2noise/pred_images'  # condition_img 所在目录
 N2N_ROOT = '/host/d/file/pre/noise2noise/pred_images'
-DDM2_ROOT = '/host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260112_121844/inference'
+DDM2_ROOT = '/host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260115_020435/inference'
 
 N2N_EPOCH = 78
 
