@@ -5,7 +5,7 @@ DDM2 Evaluation Script - Local Version
 
 Usage:
     # 评估单个患者
-    python eval_ddm2_local.py --patient_id 214931
+    python eval_ddm2_local.py --patient_id 214792
 """
 
 import nibabel as nb
@@ -28,7 +28,7 @@ GT_ROOT = '/host/d/file/gt/diffusion denoising/unsupervised_gaussian_2D_current_
 GT_EPOCH = 61
 NOISY_ROOT = '/host/d/file/pre/noise2noise/pred_images'  # condition_img 所在目录
 N2N_ROOT = '/host/d/file/pre/noise2noise/pred_images'
-DDM2_ROOT = '/host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260115_020435/inference'
+DDM2_ROOT = '/host/c/Users/ROG/Documents/GitHub/DDM/experiments/ct_denoise_260119_000502/inference'
 
 N2N_EPOCH = 78
 
