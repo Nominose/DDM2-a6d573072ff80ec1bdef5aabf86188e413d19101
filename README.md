@@ -1,88 +1,163 @@
 # DDM<sup>2</sup>: Self-Supervised Diffusion MRI Denoising with Generative Diffusion Models, ICLR 2023
 
-Paper: https://arxiv.org/pdf/2302.03018.pdf
-
-![framework](./assets/framework.png)
-
-![result](./assets/gslider_0.gif)
-
-## Dependencies
-
-Please clone our environment using the following command:
-
-```
-conda env create -f environment.yml  
-conda activate ddm2
-```
-
-## Usage
-
-### Data
-
-For fair evaluations, we used the data provided in the [DIPY](https://dipy.org/) library. One can easily access their provided data (e.g. Sherbrooke and Stanford HARDI) by using their official loading script:  
-
-```python3
-hardi_fname, hardi_bval_fname, hardi_bvec_fname = get_fnames('stanford_hardi')
-data, affine = load_nifti(hardi_fname)
-```
-
-### Configs
-
-Different experiments are controlled by configuration files, which are in ```config/```. 
-
-We have provided default training configurations for reproducing our experiments. Users are required to **change the path vairables** to their own directory/data before running any experiments. *More detailed guidances are provided as inline comments in the config files.*
-
-### Train
-
-The training of DDM<sup>2</sup> contains three sequential stages. For each stage, a corresponding config file (or an update of the original config file) need to be passed as a coommand line arg.
-
-1. To train our Stage I:  
-```python3 train_noise_model.py -p train -c config/hardi_150.json```  
-or alternatively, modify ```run_stage1.sh``` and run:  
-```./run_stage1.sh```  
-
-2. After Stage I training completed, the path to the checkpoint of the noise model need to be specific at 'resume_state' of the 'noise_model' section in corresponding config file. Additionally, a file path (.txt) needs to be specified at 'initial_stage_file' in the 'noise_model' section. This file will be recorded with the matched states in Stage II.  
-
-3. To process our Stage II:  
-```python3 match_state.py -p train -c config/hardi_150.json```  
-or alternatively, modify ```run_stage2.sh``` and run:  
-```./run_stage2.sh```  
-
-4. After Stage II finished, the state file (a '.txt' file, generated in the previous step) needs to be specified at **'stage2_file'** variable in the last line of each config file. This step is neccesary for the following steps and inference.
-
-5. To train our Stage III:  
-```python3 train_diff_model.py -p train -c config/hardi_150.json```  
-or alternatively, modify ```run_stage3.sh``` and run:  
-```./run_stage3.sh```  
-
-6. Validation results along with checkpoints will be saved in the ```/experiments``` folder.
+1.修改config文件路径为本地路径
+2.(可选但是加速很多)运行nii2npy.py文件处理噪声图像和n2n结果得到npy格式图像，加速训练和推理
+3.终端: ./run_stage2.sh 得到stage2_matched.txt文件
+4.终端：./run_stage3.sh  运行训练
+5.终端：python inference_ddm2.py -c config/ct_denoise.json --patient_idx 0 得到推理结果，文件路径在experiment/inference/
+6.终端：python eval_ddm2_local.py --patient_id 214878 
+修改最后病人id为需要量化结果的id，得到量化结果，该步需要修改eval_ddm2_local.py内文件路径为本地路径
 
 
-### Inference (Denoise)
+config:
 
-One can use the previously trained Stage III model to denoise a MRI dataset through:  
-```python denoise.py -c config/hardi.json```  
-or alternatively, modify ```denoise.sh``` and run:  
-```./denoise.sh```   
+"resume_state"：
+{
+  "name": "ct_denoise",
+  "phase": "train",
+  "gpu_ids": [
+    0
+  ],
+  "path": {
+    "log": "logs",
+    "tb_logger": "tb_logger",
+    "results": "results",
+    "checkpoint": "checkpoint",
+    "resume_state": null //断点重训，路径如"/host/xxx/experiments/ct_denoise_xxx/checkpoint/latest"
+  },
+  "datasets": {
+    "train": {
+      "name": "ct",
+      "dataroot": "/host/d/file/fixedCT_static_simulation_train_test_gaussian_local.xlsx", //输入噪声的dataroot
 
-The ```--save``` flag can be used to save the denoised reusults into a single '.nii.gz' file:  
-```python denoise.py -c config/hardi.json --save```
+      "data_root": "/host/d/file/simulation/", //噪声数据的实际存放位置
+      "train_batches": [5], //训练集batch
+      "val_batches": [5], //验证集batch
+      "volume_mask": [14, 15], //训练用当前batch下的第几个case，从0开始当前为0，1，2...第14张
+      "slice_range": [30, 80],
+      "phase": "train",
+      "padding": 3,
+      "val_volume_idx": "all", //选验证集当前batch下的第几个的case验证
+      "val_slice_idx": 25, //第几张slice
+      "batch_size": 1,
+      "in_channel": 1,
+      "num_workers": 4,
+      "use_shuffle": true,
+      "image_size": 512,
+      "lr_flip": 0.5,
+      "HU_MIN": -1000.0, //HU设置
+      "HU_MAX": 2000.0, 
+      "histogram_equalization": true, //是否开启he
+      "bins_file": "/host/d/file/histogram_equalization/bins.npy", //替换为本地路径
+      "bins_mapped_file": "/host/d/file/histogram_equalization/bins_mapped.npy", //替换为本地路径
+      "teacher_n2n_root": "/host/d/file/pre/noise2noise/pred_images/", //n2n结果路径
+      "teacher_n2n_epoch": 78 //n2nepoch
+    },
+    "val": {
+      "name": "ct",
+      "dataroot": "/host/d/file/fixedCT_static_simulation_train_test_gaussian_local.xlsx", //输入噪声的dataroot
 
-
-### Quantitative Metrics Calulation
-
-With the denoised Stanford HARDI dataset, please follow the instructions in ```quantitative_metrics.ipynb``` to calculate SNR and CNR scores.
-
-*This notebook is derived from this [DIPY script](https://dipy.org/documentation/1.1.0./examples_built/snr_in_cc/). Please respect their license of usage.*
-
-## Citation  
-
-If you find this repo useful in your work or research, please cite:  
-
-```
-@inproceedings{xiangddm,
-  title={DDM $\^{} 2$: Self-Supervised Diffusion MRI Denoising with Generative Diffusion Models},
-  author={Xiang, Tiange and Yurt, Mahmut and Syed, Ali B and Setsompop, Kawin and Chaudhari, Akshay},
-  booktitle={The Eleventh International Conference on Learning Representations}
+      "data_root": "/host/d/file/simulation/", //噪声数据的实际存放位置
+      "train_batches": [5], //训练集batch
+      "val_batches": [5], //验证集batch
+      "volume_mask": [14, 15], //训练用当前batch下的第几个case，从0开始当前为0，1，2...第14张
+      "slice_range": [30, 80],
+      "phase": "val",
+      "padding": 3,
+      "val_volume_idx": "all", //选验证集当前batch下的第几个的case验证
+      "val_slice_idx": 25,  //第几张slice
+      "batch_size": 1,
+      "in_channel": 1,
+      "num_workers": 0,
+      "image_size": 512,
+      "lr_flip": 0.0,
+      "HU_MIN": -1000.0, //HU设置
+      "HU_MAX": 2000.0,
+      "histogram_equalization": true, //是否开启he
+      "bins_file": "/host/d/file/histogram_equalization/bins.npy", //替换为本地路径
+      "bins_mapped_file": "/host/d/file/histogram_equalization/bins_mapped.npy", //替换为本地路径
+      "teacher_n2n_root": "/host/d/file/pre/noise2noise/pred_images/", //n2n结果路径
+      "teacher_n2n_epoch": 78,
+      "data_len": 1
+    }
+  },
+  "model": {
+    "which_model_G": "mri",
+    "finetune_norm": false,
+    "drop_rate": 0.0,
+    "unet": {
+      "in_channel": 1,
+      "out_channel": 1,
+      "inner_channel": 32,
+      "norm_groups": 32,
+      "channel_multiplier": [1, 2, 4, 8, 8],
+      "attn_res": [16],
+      "res_blocks": 2,
+      "dropout": 0.0,
+      "version": "v1"
+    },
+    "beta_schedule": {
+      "train": {
+        "schedule": "rev_warmup70",
+        "n_timestep": 1000,
+        "linear_start": 5e-05,
+        "linear_end": 0.01
+      },
+      "val": {
+        "schedule": "rev_warmup70",
+        "n_timestep": 1000,
+        "linear_start": 5e-05,
+        "linear_end": 0.01
+      }
+    },
+    "diffusion": {
+      "image_size": 512,
+      "channels": 1,
+      "conditional": true
+    }
+  },
+  "train": {
+    "n_iter": 100000, //iteration次数
+    "val_freq": 1000, //验证频率
+    "save_checkpoint_freq": 10000, //模型多少iter保存一次
+    "print_freq": 100,
+    "optimizer": {
+      "type": "adam",
+      "lr": 0.0001
+    },
+    "ema_scheduler": {
+      "step_start_ema": 5000,
+      "update_ema_every": 1,
+      "ema_decay": 0.9999
+    }
+  }, //stage1设置无需修改
+  "noise_model": {
+    "resume_state": null,
+    "initial_stage_file": null,
+    "drop_rate": 0.0,
+    "unet": {
+      "in_channel": 2,
+      "out_channel": 1,
+      "inner_channel": 32,
+      "norm_groups": 32,
+      "channel_multiplier": [1, 2, 4, 8, 8],
+      "attn_res": [16],
+      "res_blocks": 2,
+      "dropout": 0.0,
+      "version": "v1"
+    },
+    "beta_schedule": {
+      "linear_start": 5e-05,
+      "linear_end": 0.01
+    },
+    "n_iter": 50000,
+    "val_freq": 2000,
+    "save_checkpoint_freq": 10000,
+    "print_freq": 100,
+    "optimizer": {
+      "type": "adam",
+      "lr": 0.0001
+    }
+  },
+  "stage2_file": "experiments/ct_denoise_teacher/stage2_matched.txt" //提前设置好stage2_matched的生成路径
 }
-```
